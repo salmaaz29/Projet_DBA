@@ -1,0 +1,4 @@
+query_id,sql_text,execution_time_sec,rows_processed,buffer_gets,disk_reads,executions,execution_plan,cost,issue,recommendation
+Q001,SELECT * FROM orders WHERE order_date > '2023-01-01',45.2,1500000,250000,12000,156,TABLE ACCESS FULL | ORDERS | Cost: 5000,5000,Full table scan sur 1.5M lignes,CREATE INDEX idx_orders_date ON orders(order_date)
+Q002,"SELECT c.name, COUNT(o.id) FROM customers c JOIN orders o ON c.id = o.customer_id GROUP BY c.name",32.8,800000,180000,8500,89,HASH JOIN | Cost: 3200,3200,Pas d'index sur customer_id,CREATE INDEX idx_orders_customer ON orders(customer_id)
+Q003,SELECT * FROM products WHERE UPPER(product_name) LIKE '%PHONE%',28.5,500000,120000,6000,234,TABLE ACCESS FULL | PRODUCTS | Cost: 2800,2800,Fonction UPPER() empêche utilisation index,Index fonction-based OU réécrire sans fonction

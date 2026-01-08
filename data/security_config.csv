@@ -1,0 +1,4 @@
+username,account_status,profile,roles,system_privileges,password_life_days,failed_login_attempts,risk_level,risk_reasons
+SYSTEM,OPEN,DEFAULT,"DBA,CONNECT,RESOURCE","CREATE SESSION,CREATE TABLE,DROP ANY TABLE",90,0,CRITICAL,Compte système avec DBA role
+SYS,OPEN,DEFAULT,"DBA,SYSDBA",ALL PRIVILEGES,180,0,CRITICAL,Compte ultra-privilégié
+APP_USER,OPEN,APP_PROFILE,"CONNECT,RESOURCE","CREATE SESSION,CREATE TABLE",90,0,MEDIUM,Compte applicatif standard

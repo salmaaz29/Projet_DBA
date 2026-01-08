@@ -1,0 +1,2 @@
+database_name,db_size_gb,tablespaces_count,users_count,tables_count,daily_transactions,peak_connections,avg_response_time_ms,cpu_usage_percent,memory_usage_gb,backup_frequency,rto_hours,rpo_hours,criticality,environment
+ORCL_PROD,2500,12,45,850,5000000,250,120,65,128,DAILY,4,1,HIGH,PRODUCTION

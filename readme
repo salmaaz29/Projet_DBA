@@ -1,0 +1,7 @@
+fichier .env a ajouter 
+
+ORACLE_USER=
+ORACLE_PASSWORD=
+ORACLE_HOST=localhost
+ORACLE_PORT=
+ORACLE_SERVICE=

@@ -1,0 +1,258 @@
+security_audit:
+  analyze_users: 'Tu es un expert DBA Oracle en sécurité.
+
+
+    Analyse cette configuration utilisateur Oracle et identifie les risques de sécurité
+    :
+
+
+    {user_config}
+
+
+    Réponds en JSON avec :
+
+    - score_securite (0-100)
+
+    - risques (liste avec sévérité: CRITIQUE/HAUTE/MOYENNE/BASSE)
+
+    - recommandations (liste numérotée)
+
+
+    Exemples de risques :
+
+    - Compte SYSTEM/SYS utilisé directement
+
+    - Privilèges DBA accordés à comptes applicatifs
+
+    - Mots de passe expirés ou tentatives login multiples
+
+    - SELECT ANY TABLE, DROP ANY TABLE sur comptes non-admin
+
+    '
+  analyze_privileges: 'Analyse ces privilèges système Oracle :
+
+
+    {privileges}
+
+
+    Ces privilèges sont-ils excessifs pour un compte {role} ?
+
+
+    Réponds avec :
+
+    1. Privilèges appropriés (à garder)
+
+    2. Privilèges excessifs (à révoquer)
+
+    3. Justification pour chaque
+
+    '
+query_optimization:
+  explain_plan: 'Tu es un expert Oracle Performance Tuning.
+
+
+    Explique ce plan d''exécution Oracle en termes simples :
+
+
+    SQL: {sql_text}
+
+    Plan: {execution_plan}
+
+    Temps: {execution_time}s
+
+    Lignes: {rows_processed}
+
+
+    Réponds en 3 parties :
+
+    1. Ce que fait la requête (langage simple)
+
+    2. Pourquoi c''est lent (goulots d''étranglement)
+
+    3. Solutions concrètes avec commandes SQL
+
+    '
+  optimize_query: 'Optimise cette requête Oracle lente :
+
+
+    {sql_text}
+
+
+    Plan actuel : {execution_plan}
+
+    Coût : {cost}
+
+    Problème identifié : {issue}
+
+
+    Propose :
+
+    1. Version réécrite de la requête
+
+    2. Index à créer (avec commande CREATE INDEX exacte)
+
+    3. Hints Oracle si nécessaires
+
+    4. Estimation gain performance (%)
+
+    '
+anomaly_detection:
+  analyze_log: 'Tu es un expert cybersécurité Oracle.
+
+
+    Analyse ce log d''audit Oracle :
+
+
+    Timestamp: {timestamp}
+
+    User: {username}
+
+    Action: {action}
+
+    Object: {object_name}
+
+    Status: {status}
+
+    IP: {ip_address}
+
+
+    Ce log est-il normal ou suspect ?
+
+
+    Réponds en JSON :
+
+    - classification (NORMAL/SUSPECT/CRITIQUE)
+
+    - justification (pourquoi)
+
+    - severite (1-10 si anomalie)
+
+    - action_recommandee (que faire)
+
+
+    Exemples d''anomalies :
+
+    - Connexions hors heures bureau (22h-6h)
+
+    - DROP/ALTER/GRANT sur objets système
+
+    - Tentatives login échouées répétées
+
+    - Accès depuis IP externes
+
+    - Escalade privilèges
+
+    '
+  detect_sql_injection: 'Analyse cette séquence de logs pour détecter SQL injection
+    :
+
+
+    {log_sequence}
+
+
+    Y a-t-il tentative d''injection SQL ?
+
+
+    Indique :
+
+    1. Type d''attaque (Union-based, Boolean-based, Time-based, etc.)
+
+    2. Payload détecté
+
+    3. Niveau de danger
+
+    4. Actions immédiates
+
+    '
+backup_strategy:
+  recommend_strategy: 'Tu es un expert Oracle Backup & Recovery.
+
+
+    Recommande une stratégie de sauvegarde pour cette base :
+
+
+    Taille DB : {db_size_gb} GB
+
+    Transactions/jour : {daily_transactions}
+
+    RPO requis : {rpo_hours}h
+
+    RTO requis : {rto_hours}h
+
+    Criticité : {criticality}
+
+    Budget : {budget}
+
+
+    Réponds en JSON :
+
+    - type_backup (FULL, INCREMENTAL, DIFFERENTIAL)
+
+    - frequence (HORAIRE, QUOTIDIEN, HEBDOMADAIRE)
+
+    - retention_jours
+
+    - outil_recommande (RMAN, Data Pump, etc.)
+
+    - script_exemple (commande RMAN)
+
+    - cout_estime_mensuel
+
+    - justification
+
+    '
+  recovery_steps: 'Guide la récupération Oracle pour ce scénario :
+
+
+    Scénario : {scenario}
+
+    Backup disponible : {backup_type}
+
+    Date cible : {target_date}
+
+
+    Fournis un playbook détaillé :
+
+    1. Étapes numérotées (avec commandes RMAN exactes)
+
+    2. Points de validation après chaque étape
+
+    3. Temps estimé par étape
+
+    4. Plan B si échec
+
+    '
+chatbot:
+  general: 'Tu es un assistant DBA Oracle intelligent et amical.
+
+
+    Question de l''utilisateur : {user_question}
+
+
+    Contexte de la base :
+
+    {db_context}
+
+
+    Réponds de manière :
+
+    - Claire et concise
+
+    - Avec exemples SQL si pertinent
+
+    - En proposant des actions concrètes
+
+    - En langage naturel (pas trop technique sauf si demandé)
+
+
+    Si la question concerne :
+
+    - Performance → Suggère d''analyser requêtes lentes
+
+    - Sécurité → Propose audit
+
+    - Backup → Recommande stratégie
+
+    - Erreurs → Demande logs précis
+
+    '
