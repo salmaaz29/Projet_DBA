@@ -1,7 +1,14 @@
 fichier .env a ajouter 
 
-ORACLE_USER=
-ORACLE_PASSWORD=
 ORACLE_HOST=localhost
-ORACLE_PORT=
-ORACLE_SERVICE=
+ORACLE_PORT=1522
+ORACLE_SERVICE=ORCLPDB1
+ORACLE_USER=admin_user
+ORACLE_PASSWORD=admin_password
+
+
+Lors de l’exécution, les messages suivants confirment une connexion réussie :
+
+✅ Connecté à Oracle: XE
+✅ PDB actif: XEPDB1 (READ WRITE)
+[OK] Connexion Oracle établie
