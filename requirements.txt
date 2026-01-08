@@ -12,3 +12,5 @@ plotly==5.18.0
 ollama==0.1.6
 oracledb
 pyarrow
+langchain-pinecone
+huggingface-hub
