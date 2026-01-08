@@ -1115,7 +1115,7 @@ Usage:
 
     print("\n✅ MODULE 1 TERMINÉ AVEC SUCCÈS")
     print("📂 Fichiers générés dans ./data/")
-    print("📋 Prochaine étape : MODULE 2 (RAG Setup avec ChromaDB)\n")
+    print("📋 Prochaine étape : MODULE 2 (RAG Setup)\n")
     
     # Instructions supplémentaires
     if extractor.use_simulation:
