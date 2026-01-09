@@ -1,286 +1,203 @@
-anomaly_detection:
-  analyze_log: 'Analyse ce log d''audit Oracle 21c. Est-il suspect ?
-
-
-    Log : {log}
-
-    Contexte : {context}
-
-    Heure : {time}
-
-    Utilisateur : {user}
-
-
-    Évalue selon :
-
-    1. Timing (heures normales de travail ?)
-
-    2. Utilisateur (habituel pour cette action ?)
-
-    3. Action (conforme aux rôles ?)
-
-    4. Objet cible (sensible ?)
-
-    5. IP (connue ?)
-
-
-    Classe en : NORMAL / SUSPECT / CRITIQUE
-
-    Justifie ta réponse avec des indicateurs.'
-  detect_intrusion: 'Détecte les patterns d''attaque dans cette séquence de logs Oracle
-    21c.
-
-    Recherche : injection SQL, escalade privilèges, exfiltration données, accès hors
-    heure.
-
-
-    Logs : {logs}
-
-    Période : {period}
-
-    Utilisateurs concernés : {users}
-
-
-    Identifie :
-
-    1. Type d''attaque potentielle
-
-    2. Sévérité (CRITIQUE/HAUTE/MOYENNE)
-
-    3. Indicateurs de compromission
-
-    4. Recommandation immédiate
-
-    5. Investigation à mener'
-  sequence_analysis: 'Analyse cette séquence temporelle de logs Oracle.
-
-
-    Séquence : {sequence}
-
-    Fenêtre temporelle : {window}
-
-
-    Recherche :
-
-    - Activité anormale groupée
-
-    - Tentatives répétées
-
-    - Patterns d''attaque
-
-    - Comportements inhabituels
-
-
-    Fournis : timeline des événements, corrélations, risque global.'
-backup_strategy:
-  recommend_plan: "Recommande une stratégie de sauvegarde Oracle 21c XE optimale.\n\
-    \nContexte Oracle 21c XE :\n- Taille DB : {size} GB (limite XE: 12GB)\n- RPO requis\
-    \ : {rpo}\n- RTO requis : {rto}\n- Criticité : {criticality}\n- Espace disponible\
-    \ : {space}\n- Archive mode : {archive_mode}\n\nFournis en JSON :\n{\n  \"type_backup\"\
-    : [\"complète\", \"incrémentielle\", \"archivelog\"],\n  \"frequence\": {\"full\"\
-    : \"X\", \"incremental\": \"Y\", \"archivelog\": \"Z\"},\n  \"retention\": {\"\
-    days\": N, \"recovery_window\": M},\n  \"emplacement\": [\"local\", \"cloud\"\
-    , \"nfs\"],\n  \"outil\": [\"RMAN\", \"Data Pump\", \"Cloud Backup\"],\n  \"commande_exemple\"\
-    : \"commande RMAN\",\n  \"coût_estimé\": \"$\",\n  \"limitations_XE\": [\"...\"\
-    ]\n}"
-  validate_rman_script: 'Valide ce script RMAN Oracle 21c.
-
-
-    Script : {script}
-
-    Configuration : {config}
-
-
-    Vérifie :
-
-    1. Syntaxe correcte
-
-    2. Compatibilité Oracle 21c XE
-
-    3. Bonnes pratiques
-
-    4. Gestion des erreurs
-
-    5. Plan de restauration
-
-
-    Corrige si nécessaire.'
-general_dba:
-  capacity_planning: 'Planification de capacité Oracle 21c XE.
-
-
-    Utilisation actuelle : {current_usage}
-
-    Croissance prévue : {growth}
-
-    Objectifs : {objectives}
-
-    Contraintes XE : {xe_constraints}
-
-
-    Fournis recommandations :
-
-    1. Projections 3/6/12 mois
-
-    2. Points de rupture
-
-    3. Actions préventives
-
-    4. Migration planning'
-  troubleshoot_performance: 'Diagnostique ce problème de performance Oracle 21c.
-
-
-    Symptômes : {symptoms}
-
-    Métriques : {metrics}
-
-    Alertes : {alerts}
-
-    Récent changements : {changes}
-
-
-    Fournis diagnostic par étapes :
-
-    1. Investigations immédiates
-
-    2. Commandes à exécuter
-
-    3. Interprétation des résultats
-
-    4. Correctifs possibles
-
-    5. Monitoring post-correction'
-query_optimization:
-  explain_plan: "Explique ce plan d'exécution Oracle 21c en termes simples.\nIdentifie\
-    \ les 3 opérations les plus coûteuses et leurs impacts.\n\nPlan : {plan}\nRequête\
-    \ : {query}\nStatistiques : {stats}\n\nFormat : \n1. Explication claire du flux\n\
-    2. Points coûteux numérotés avec % d'impact\n3. Suggestions de réduction de coût"
-  index_recommendation: 'Recommande des index pour améliorer cette requête Oracle
-    21c.
-
-
-    Requête : {query}
-
-    Tables concernées : {tables}
-
-    Colonnes filtrées/jointees : {columns}
-
-    Volume de données : {volume}
-
-
-    Fournis :
-
-    - Index recommandés (colonne, type)
-
-    - Impact estimé
-
-    - Énoncé CREATE INDEX
-
-    - Considérations (maintien, espace)'
-  suggest_optimization: 'Propose 2-3 optimisations concrètes pour cette requête Oracle
-    21c.
-
-
-    Requête : {query}
-
-    Temps d''exécution : {time}s
-
-    Coût optimiseur : {cost}
-
-    Problème détecté : {issue}
-
-    Métriques : {metrics}
-
-
-    Fournis :
-
-    1. Recommandation 1 (prioritaire) avec code SQL
-
-    2. Recommandation 2 (alternative)
-
-    3. Recommandation 3 (architecturale si nécessaire)
-
-    4. Impact estimé sur performance'
-recovery_guide:
-  generate_playbook: 'Génère un playbook RMAN détaillé pour Oracle 21c XE.
-
-
-    Scénario : {scenario}
-
-    Backup disponible : {backup_status}
-
-    Date cible : {target_date}
-
-    PDB/Non-CDB : {pdb_status}
-
-    Espace disponible : {space}
-
-
-    Fournis :
-
-    1. Étapes numérotées avec vérifications
-
-    2. Commandes RMAN exactes (Oracle 21c)
-
-    3. Points de validation à chaque étape
-
-    4. Durée estimée par étape
-
-    5. Rollback plan en cas d''échec
-
-    6. Post-recovery validation'
-  point_in_time_recovery: 'Guide de récupération point-in-time Oracle 21c.
-
-
-    Date/heure cible : {target_datetime}
-
-    Type de perte : {loss_type}
-
-    Objets affectés : {affected_objects}
-
-    Backups disponibles : {available_backups}
-
-
-    Fournis playbook avec :
-
-    1. Pré-requis et vérifications
-
-    2. Commandes RMAN exactes
-
-    3. Vérification des SCN/Time
-
-    4. Procédure de switchover
-
-    5. Validation post-récupération'
-security_audit:
-  analyze_users: 'Analyse cette configuration utilisateurs Oracle 21c.
-
-    Identifie les risques de sécurité selon ces critères :
-
-    - Privilèges excessifs (DBA, SYSDBA, SYSOPER)
-
-    - Comptes par défaut non sécurisés
-
-    - Rôles cumulés dangereux
-
-    - Comptes expirés mais actifs
-
-    - Profils non sécurisés
-
-    - Tablespace SYSTEM utilisé par des utilisateurs applicatifs
-
-
-    Configuration : {config}
-
-
-    Fournis : score/100, risques détectés (CRITIQUE/HAUTE/MOYENNE/FAIBLE), recommandations.'
-  assess_privileges: "Évalue ces privilèges système Oracle 21c.\nVérifie : moindre\
-    \ privilège, séparation des responsabilités, accès sensibles.\n\nPrivilèges :\
-    \ {privileges}\nUtilisateurs : {users}\n\nFormat : \n- Sévérité (CRITIQUE/HAUTE/MOYENNE/FAIBLE)\n\
-    - Justification détaillée\n- Correction immédiate\n- Action à long terme"
-  check_audit_policies: 'Vérifie les politiques d''audit unifié Oracle 21c.
-
-    Politiques : {policies}
-
-
-    Évalue : couverture d''audit, événements critiques audités, lacunes.'
+# data/prompts.yaml
+# Fichier centralisé de tous les prompts du projet Oracle AI Platform
+# Utilisé par LLMEngine (Module 3)
+# Chaque prompt inclut des few-shot examples pour améliorer la qualité des réponses
+
+module3:
+  general_explain:
+    description: "Prompt générique pour expliquer un concept Oracle"
+    prompt: |
+      Explique de manière claire et professionnelle le concept suivant en français, à destination d'un administrateur Oracle :
+      {concept}
+
+      Réponds en 4 parties :
+      1. Définition simple
+      2. Pourquoi c'est important
+      3. Exemple concret
+      4. Meilleure pratique recommandée
+
+      Few-shot examples :
+      - Concept : Unified Auditing
+        → 1. Unified Auditing est le système d'audit moderne d'Oracle qui centralise tous les audits dans une seule file.
+        → 2. Il remplace l'audit traditionnel, est plus performant et plus sécurisé.
+        → 3. Exemple : ENABLE UNIFIED AUDITING; CREATE AUDIT POLICY...
+        → 4. Toujours l'activer en mode "mixed" lors d'une migration.
+
+      - Concept : RMAN Incremental Backup
+        → 1. Sauvegarde qui ne copie que les blocs modifiés depuis la dernière sauvegarde.
+        → ...
+
+module4:  # Audit de Sécurité
+  assess_security_config:
+    description: "Analyse une configuration sécurité complète"
+    prompt: |
+      Tu es un expert en sécurité Oracle Database.
+      Analyse la configuration sécurité suivante et identifie tous les risques.
+
+      Configuration :
+      {config}
+
+      Réponds au format JSON strict :
+      {
+        "score_securite": (0-100),
+        "risques": [
+          {"niveau": "critique|haute|moyenne|faible", "description": "...", "recommandation": "..."}
+        ],
+        "recommandations_generales": ["...", "..."]
+      }
+
+      Few-shot examples :
+      - Input : User SYS with password never expires + DBA role to APP_USER
+        → score_securite: 35
+        → risques: [critique: mot de passe SYS non expiré, haute: privilèges excessifs sur APP_USER]
+        → recommandations: Activer password expiration, appliquer principe moindre privilège
+
+      - Input : Unified Auditing activé + password life time 90 days
+        → score_securite: 92
+        → risques: [faible: audit policy trop large]
+        → recommandations: Affiner les policies d'audit
+
+  assess_privileges:
+    description: "Vérifie si des privilèges sont excessifs"
+    prompt: |
+      Ces privilèges système sont-ils excessifs pour un utilisateur applicatif ?
+      {privileges}
+
+      Réponds avec : Oui/Non + Justification + Recommandation alternative.
+
+      Few-shot examples :
+      - Privilèges : CREATE ANY TABLE, DROP ANY TABLE
+        → Oui. Un utilisateur applicatif ne devrait pas pouvoir créer/supprimer des objets dans n'importe quel schéma.
+        → Recommandation : Utiliser des rôles limités au schéma propriétaire.
+
+module5:  # Optimisation de Requêtes
+  analyze_execution_plan:
+    description: "Explique et optimise un plan d'exécution"
+    prompt: |
+      Analyse ce plan d'exécution Oracle et cette requête SQL.
+
+      Requête : {sql_query}
+      Plan : {plan}
+
+      Réponds en français avec :
+      1. Explication simple du plan
+      2. Les 3 opérations les plus coûteuses
+      3. 2 à 3 recommandations d'optimisation (index, hint, réécriture)
+      4. Estimation d'impact (faible/moyen/élevé)
+
+      Few-shot examples :
+      - Requête : SELECT * FROM employees WHERE department_id = 10
+        Plan : FULL TABLE SCAN on EMPLOYEES
+        → 1. Oracle lit toute la table car pas d'index utilisé
+        → 2. Coût principal : Full scan (100%)
+        → 3. Créer index sur DEPARTMENT_ID, ajouter WHERE optimisé, utiliser statistiques à jour
+        → 4. Impact élevé
+
+  suggest_optimizations:
+    description: "Propose des optimisations pour requête lente"
+    prompt: |
+      Cette requête est lente. Propose 3 optimisations possibles.
+
+      Requête : {sql_query}
+      Contexte : {context}
+
+      Few-shot examples :
+      - Requête avec FULL SCAN sur grande table sans WHERE → Ajouter index, partitionning, gather stats
+
+module6:  # Détection d'Anomalies
+  detect_anomaly:
+    description: "Analyse un log d'audit pour détecter une anomalie"
+    prompt: |
+      Analyse ce log d'audit Oracle. Est-ce normal ou suspect ?
+
+      Log : {log_entry}
+
+      Réponds au format JSON :
+      {
+        "classification": "normal|suspect|critique",
+        "severite": "faible|moyenne|haute|critique",
+        "justification": "...",
+        "action_recommandee": "..."
+      }
+
+      Few-shot examples :
+      - Log : SELECT on HR.EMPLOYEES at 09:00 by HR_USER
+        → normal, faible, Accès légitime pendant heures bureau
+
+      - Log : ALTER SYSTEM by UNKNOWN at 03:00
+        → critique, haute, Tentative modification système hors heures, possible intrusion
+
+      - Log : Multiple failed logins from IP externe
+        → suspect, haute, Possible attaque brute force
+
+  analyze_sequence:
+    description: "Analyse une série de logs"
+    prompt: |
+      Analyse cette séquence de logs pour détecter un pattern d'attaque.
+      {logs_sequence}
+
+      Identifie si c'est une intrusion potentielle.
+
+module7:  # Stratégie de Sauvegarde
+  recommend_backup_strategy:
+    description: "Recommande une stratégie RMAN personnalisée"
+    prompt: |
+      Recommande une stratégie de sauvegarde Oracle optimale selon ces contraintes :
+
+      RPO souhaité : {rpo}
+      RTO souhaité : {rto}
+      Volume transactions : {volume}
+      Criticité des données : {criticite}
+      Budget/ressources : {budget}
+
+      Réponds avec :
+      - Type de backup (full + incremental, etc.)
+      - Fréquence
+      - Rétention
+      - Script RMAN de base
+
+      Few-shot examples :
+      - RPO: 1h, RTO: 4h, haute criticité
+        → Full nightly + incremental hourly, rétention 14 jours + archive logs
+
+      - RPO: 24h, dev environment
+        → Full weekly + incremental daily, rétention 7 jours
+
+module8:  # Restauration & Récupération
+  recovery_full_database:
+    description: "Guide restauration complète après crash"
+    prompt: |
+      L'utilisateur a perdu sa base complète. Guide-le pas à pas.
+
+      Situation : {situation}
+      Backups disponibles : {backups}
+
+      Fournis un playbook clair avec commandes RMAN.
+
+  recovery_point_in_time:
+    description: "Récupération point-in-time"
+    prompt: |
+      Comment récupérer la base au {target_time} ?
+
+      Utilise PITR avec RMAN. Pose des questions si besoin, puis donne les étapes.
+
+  recovery_table:
+    description: "Récupération d'une table supprimée"
+    prompt: |
+      Une table {table_name} a été droppée accidentellement.
+      Comment la restaurer sans impacter le reste ?
+
+      Propose Flashback Table ou TSPITR.
+
+module9:  # Chatbot Général
+  general_response:
+    description: "Réponse conversationnelle générique"
+    prompt: |
+      Tu es un assistant expert Oracle Database en français.
+      Réponds de manière professionnelle, claire et concise à cette question :
+
+      {user_question}
+
+      Utilise le contexte fourni si pertinent.
+      Cite les sources quand possible.
+      Si tu ne sais pas → dis-le honnêtement.

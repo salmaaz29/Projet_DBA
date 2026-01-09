@@ -12,3 +12,6 @@ Lors de l’exécution, les messages suivants confirment une connexion réussie 
 ✅ Connecté à Oracle: XE
 ✅ PDB actif: XEPDB1 (READ WRITE)
 [OK] Connexion Oracle établie
+
+
+PINECONE_API_KEY=
