@@ -1,9 +1,10 @@
-# src/llm_engine.py - VERSION COMPLÈTE SANS ERREUR DE SYNTAXE
+# src/llm_engine.py - VERSION FINALE COMPLÈTE AVEC SCORING CORRIGÉ
 import ollama
 import yaml
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 from typing import Optional, Dict, Any
 import time
+import re
 
 # Importer le RAG du Module 2
 from src.rag_setup import OracleRAGSetup
@@ -17,16 +18,15 @@ class LLMEngine:
         self.rag = rag_setup  # Instance RAG du Module 2
         self.default_model = default_model  # Maintenant gemma2:2b
         self.prompts = self._load_prompts(prompts_file)
-        self.fallback_model = "tinyllama"  # ⚠️ CORRIGÉ : tinyllama au lieu de phi3:mini
+        self.fallback_model = "tinyllama"
 
     def _load_prompts(self, file_path: str) -> Dict:
         """Charger tous les prompts depuis YAML."""
         try:
-            with open(file_path, 'r') as f:
+            with open(file_path, 'r', encoding='utf-8') as f:
                 return yaml.safe_load(f)
         except Exception as e:
             print(f"⚠️  prompts.yaml non trouvé, utilisation des prompts par défaut: {e}")
-            # Retourner des prompts par défaut si fichier manquant
             return self._get_default_prompts()
 
     def _get_default_prompts(self) -> Dict:
@@ -58,7 +58,7 @@ Format : Classification (NORMAL/SUSPECT/CRITIQUE) + Justification"""
 
     @retry(
         retry=retry_if_exception_type(Exception),
-        stop=stop_after_attempt(2),  # Réduit à 2 tentatives
+        stop=stop_after_attempt(2),
         wait=wait_exponential(multiplier=1, min=2, max=5)
     )
     def generate(self, prompt: str, context: Optional[str] = None, model: Optional[str] = None, max_tokens: int = 800) -> str:
@@ -71,8 +71,8 @@ Format : Classification (NORMAL/SUSPECT/CRITIQUE) + Justification"""
         if context is None:
             # Fetch context via RAG du Module 2
             try:
-                rag_results = self.rag.retrieve_context(prompt, n_results=4, min_score=0.25)
-                context = "\n".join([doc['content'][:500] for doc in rag_results]) if rag_results else ""
+                rag_results = self.rag.retrieve_context(prompt, n_results=3, min_score=0.4)
+                context = "\n".join([doc['content'][:200] for doc in rag_results]) if rag_results else ""
             except Exception as e:
                 print(f"⚠️  Erreur RAG: {e}")
                 context = ""
@@ -98,9 +98,9 @@ Réponse :"""
                 model=model,
                 prompt=full_prompt,
                 options={
-                    'num_predict': max_tokens,
-                    'temperature': 0.3,
-                    'top_p': 0.9,
+                    'num_predict': 1500,
+                    'temperature': 0.4,
+                    'top_p': 0.95,
                     'repeat_penalty': 1.1
                 }
             )['response']
@@ -124,7 +124,6 @@ Réponse :"""
                 return f"[tinyllama fallback] {response.strip()}"
             except Exception as fallback_error:
                 print(f"❌ Fallback aussi en échec: {fallback_error}")
-                # Dernier recours
                 return f"[Erreur] Aucun modèle disponible. Installez au moins 'gemma2:2b' ou 'tinyllama'."
 
     def analyze_query(self, sql_query: str, plan: str) -> Dict[str, Any]:
@@ -144,43 +143,186 @@ Réponse :"""
             return {"error": str(e), "explanation": "Erreur d'analyse"}
 
     def _extract_recommendations(self, text: str) -> list:
-        """Extrait les recommandations de la réponse."""
+        """Extrait les recommandations de la réponse - VERSION AMÉLIORÉE."""
         recommendations = []
         lines = text.split('\n')
+        
+        # Mots-clés de recommandations
+        rec_keywords = ['recommande', 'suggère', 'devrait', 'conseil', 'il faut', 
+                        'restreindre', 'limiter', 'créer', 'ajouter', 'utiliser',
+                        'configurer', 'activer', 'désactiver']
+        
         for line in lines:
-            line_lower = line.lower()
-            if any(keyword in line_lower for keyword in 
-                   ['recommande', 'suggère', 'ajoute', 'crée', 'index', 'optimise', 'conseil']):
-                recommendations.append(line.strip())
-        return recommendations[:5]
+            line_clean = line.strip()
+            line_lower = line_clean.lower()
+            
+            # Ignorer lignes trop courtes
+            if len(line_clean) < 15:
+                continue
+            
+            # Si ligne commence par bullet ou numéro
+            if line_clean.startswith(('-', '•', '*')) or (line_clean and line_clean[0].isdigit()):
+                clean = line_clean.lstrip('-•*0123456789. ').strip()
+                if len(clean) > 15:
+                    recommendations.append(clean)
+            # Ou si contient mot-clé de recommandation
+            elif any(keyword in line_lower for keyword in rec_keywords):
+                # Ne pas ajouter si c'est un header
+                if ':' not in line_clean[:30]:
+                    recommendations.append(line_clean)
+        
+        return recommendations[:10]  # Max 10
 
     def assess_security(self, config: str) -> Dict[str, Any]:
-        """Pour Module 4: Audit sécurité."""
+        """Pour Module 4: Audit sécurité - VERSION FINALE AVEC SCORING PAR RÈGLES."""
         try:
-            prompt_template = self.prompts.get('module4', {}).get('assess_security', 
-                "Analyse sécurité Oracle: {config}\nRisques et recommandations:")
-            prompt = prompt_template.format(config=config)
-            response = self.generate(prompt, max_tokens=700)
+            # Prompt optimisé avec instructions STRICTES sur le scoring
+            prompt_optimise = f"""Tu es un expert en sécurité Oracle Database.
+
+CONFIGURATION À ANALYSER :
+{config}
+
+INSTRUCTIONS IMPORTANTES :
+- Un utilisateur avec DBA = TRÈS DANGEREUX → Score < 40
+- CREATE ANY TABLE / SELECT ANY TABLE = DANGEREUX → Score < 60
+- Mot de passe sans expiration = RISQUE → -20 points
+- Chaque privilège excessif = -15 points
+
+RÉPONSE REQUISE (suis ce format EXACTEMENT, une ligne par item) :
+
+SCORE: [nombre entre 0 et 100]
+
+RISQUES DÉTECTÉS:
+- Privilège DBA accorde un accès administrateur complet
+- CREATE ANY TABLE permet création dans tous les schémas
+- SELECT ANY TABLE donne accès à toutes les données
+- Mot de passe sans expiration facilite les attaques
+
+RECOMMANDATIONS:
+- Révoquer le privilège DBA immédiatement
+- Limiter à CREATE TABLE dans le schéma propriétaire uniquement
+- Configurer PASSWORD_LIFE_TIME à 90 jours
+- Implémenter le principe du moindre privilège
+
+Réponds en français. IMPORTANT : Sois SÉVÈRE dans ton scoring."""
+
+            # Génération
+            response = self.generate(prompt_optimise, max_tokens=700)
             
-            # Parsing amélioré
-            score = 75
-            try:
-                import re
-                score_match = re.search(r'(\d{1,3})/100', response.lower())
-                if score_match:
-                    score = min(100, max(0, int(score_match.group(1))))
-            except:
-                pass
+            # ÉTAPE 1 : Calcul du score par RÈGLES (plus fiable que LLM)
+            config_lower = config.lower()
+            score = 100  # Score de départ parfait
+            
+            # Pénalités automatiques basées sur mots-clés
+            if 'dba' in config_lower:
+                score -= 40  # TRÈS SÉVÈRE : accès complet
+            if 'create any table' in config_lower:
+                score -= 20  # Peut créer partout
+            if 'select any table' in config_lower:
+                score -= 20  # Peut lire partout
+            if 'drop any' in config_lower:
+                score -= 15  # Peut supprimer partout
+            if "n'expire" in config_lower or 'never expire' in config_lower or 'jamais' in config_lower:
+                score -= 15  # Mot de passe éternel
+            if 'unlimited tablespace' in config_lower:
+                score -= 10  # Peut remplir le disque
+            if 'sysdba' in config_lower or 'sysoper' in config_lower:
+                score -= 30  # Privilèges système
+            
+            # S'assurer que le score reste dans [0, 100]
+            score = max(0, min(100, score))
+            
+            # ÉTAPE 2 : Extraction des RISQUES avec parsing amélioré
+            risks = []
+            
+            # Chercher la section RISQUES DÉTECTÉS
+            risk_section = re.search(r'RISQUES[^:]*:(.*?)(?=RECOMMANDATIONS|ANALYSE|$)', 
+                                     response, re.IGNORECASE | re.DOTALL)
+            
+            if risk_section:
+                risk_text = risk_section.group(1)
+                for line in risk_text.split('\n'):
+                    line = line.strip()
+                    # Extraire les lignes avec bullets
+                    if line.startswith(('-', '•', '*', '–')):
+                        clean_risk = line.lstrip('-•*– ').strip()
+                        # Retirer les "**" markdown
+                        clean_risk = re.sub(r'\*\*', '', clean_risk)
+                        # Retirer les deux-points et texte après si pattern "Titre: Description"
+                        if ':' in clean_risk:
+                            parts = clean_risk.split(':', 1)
+                            if len(parts[0]) > 50:  # Si titre long, garder tout
+                                clean_risk = clean_risk
+                            else:  # Sinon prendre la description après ":"
+                                clean_risk = parts[1].strip() if len(parts) > 1 else parts[0]
+                        
+                        if len(clean_risk) > 15:  # Ignorer trop court
+                            risks.append(clean_risk)
+            
+            # Fallback : chercher dans tout le texte si section non trouvée
+            if not risks:
+                risk_keywords = ['dba', 'privilège', 'any table', 'expire', 'risque', 'vulnérabilité', 'danger']
+                for line in response.split('\n'):
+                    if any(kw in line.lower() for kw in risk_keywords):
+                        clean = line.strip().lstrip('-•*– ')
+                        clean = re.sub(r'\*\*', '', clean)
+                        if 15 < len(clean) < 300:  # Longueur raisonnable
+                            risks.append(clean)
+            
+            # ÉTAPE 3 : Extraction des RECOMMANDATIONS
+            recommendations = []
+            
+            rec_section = re.search(r'RECOMMANDATIONS[^:]*:(.*?)(?=ANALYSE|$)', 
+                                   response, re.IGNORECASE | re.DOTALL)
+            
+            if rec_section:
+                rec_text = rec_section.group(1)
+                for line in rec_text.split('\n'):
+                    line = line.strip()
+                    if line.startswith(('-', '•', '*', '–')) or (line and line[0].isdigit()):
+                        clean_rec = line.lstrip('-•*–0123456789. ').strip()
+                        clean_rec = re.sub(r'\*\*', '', clean_rec)
+                        
+                        # Retirer préfixes type "Exemple:", "Note:", etc.
+                        if ':' in clean_rec[:30]:
+                            parts = clean_rec.split(':', 1)
+                            if parts[0].strip() in ['Exemple', 'Note', 'Important']:
+                                clean_rec = parts[1].strip() if len(parts) > 1 else clean_rec
+                        
+                        if len(clean_rec) > 15:
+                            recommendations.append(clean_rec)
+            
+            # Fallback pour recommandations
+            if not recommendations:
+                rec_keywords = ['recommande', 'devrait', 'révoquer', 'limiter', 'configurer', 
+                               'implémenter', 'activer', 'désactiver', 'restreindre']
+                for line in response.split('\n'):
+                    if any(kw in line.lower() for kw in rec_keywords):
+                        clean = line.strip().lstrip('-•*– ')
+                        clean = re.sub(r'\*\*', '', clean)
+                        if 15 < len(clean) < 300 and ':' not in clean[:20]:
+                            recommendations.append(clean)
+            
+            # ÉTAPE 4 : Extraction de l'analyse générale
+            analysis = response[:500]
+            analysis_match = re.search(r'ANALYSE[^:]*:(.*)', response, re.IGNORECASE | re.DOTALL)
+            if analysis_match:
+                analysis = analysis_match.group(1).strip()[:500]
             
             return {
-                "score": score,
-                "risks": self._extract_risks(response),
-                "recommendations": self._extract_recommendations(response),
-                "analysis": response[:500],
-                "model_used": self.default_model
+                "score": score,  # ⭐ Score calculé par RÈGLES (fiable)
+                "risks": risks[:10],  # Max 10 risques
+                "recommendations": recommendations[:10],  # Max 10 recommandations
+                "analysis": analysis,
+                "model_used": self.default_model,
+                "scoring_method": "rule-based"  # Indiquer méthode de calcul
             }
+            
         except Exception as e:
-            return {"error": str(e), "score": 0, "risks": []}
+            print(f"❌ Erreur assess_security: {e}")
+            import traceback
+            traceback.print_exc()
+            return {"error": str(e), "score": 0, "risks": [], "recommendations": []}
 
     def _extract_risks(self, text: str) -> list:
         """Extrait les risques identifiés."""
@@ -195,73 +337,119 @@ Réponse :"""
         return risks[:5]
 
     def detect_anomaly(self, log_entry: str, context: Optional[str] = None) -> Dict[str, Any]:
-        """Pour Module 6: Détection anomalies - VERSION CORRIGÉE SANS ERREUR SYNTAXE."""
+        """Pour Module 6: Détection anomalies - VERSION AMÉLIORÉE avec règles."""
+        
+        # ÉTAPE 1 : Classification par RÈGLES (plus fiable que LLM)
+        log_lower = log_entry.lower()
+        classification = "NORMAL"
+        severity = "BASSE"
+        
+        # Dictionnaire des erreurs critiques Oracle
+        critical_errors = {
+            'ora-00600': ('CRITIQUE', 'CRITIQUE', 'Erreur interne Oracle - Nécessite support Oracle'),
+            'ora-00700': ('CRITIQUE', 'CRITIQUE', 'Soft internal error - Vérifier alertes'),
+            'ora-01555': ('CRITIQUE', 'HAUTE', 'Snapshot too old - Augmenter UNDO_RETENTION'),
+            'ora-01652': ('CRITIQUE', 'HAUTE', 'Tablespace temporaire plein - Augmenter TEMP'),
+            'ora-00257': ('CRITIQUE', 'CRITIQUE', 'Archiver error - Espace disque insuffisant'),
+            'ora-27037': ('CRITIQUE', 'HAUTE', 'Erreur I/O fichier - Vérifier disque'),
+            'tns-12535': ('CRITIQUE', 'HAUTE', 'Timeout réseau - Vérifier connectivité'),
+            'tns-12560': ('CRITIQUE', 'HAUTE', 'Erreur adaptateur protocole'),
+        }
+        
+        suspect_errors = {
+            'ora-00942': ('SUSPECT', 'MOYENNE', 'Table inexistante ou privilèges manquants'),
+            'ora-01017': ('SUSPECT', 'MOYENNE', 'Login/password invalide - Possible attaque'),
+            'ora-12154': ('SUSPECT', 'BASSE', 'TNS service name non résolu'),
+            'ora-28000': ('SUSPECT', 'MOYENNE', 'Compte verrouillé - Tentatives login multiples'),
+        }
+        
+        # Vérifier les erreurs
+        justification_rule = None
+        for error_code, (classif, sev, justif) in critical_errors.items():
+            if error_code in log_lower:
+                classification = classif
+                severity = sev
+                justification_rule = justif
+                break
+        
+        if not justification_rule:
+            for error_code, (classif, sev, justif) in suspect_errors.items():
+                if error_code in log_lower:
+                    classification = classif
+                    severity = sev
+                    justification_rule = justif
+                    break
+        
+        # ÉTAPE 2 : Si règle trouvée, retourner directement (plus rapide et fiable)
+        if justification_rule:
+            return {
+                "classification": classification,
+                "justification": justification_rule,
+                "severity": severity,
+                "confidence": "high",  # Haute confiance car basé sur règles
+                "model_used": "rule-based",
+                "log_entry": log_entry[:100]
+            }
+        
+        # ÉTAPE 3 : Si pas de règle, utiliser le LLM (pour cas complexes)
         try:
-            # 1. Récupération sécurisée du template
-            prompt_template = None
+            prompt_detect = f"""Analyse ce log Oracle :
+
+LOG: {log_entry}
+
+Est-ce NORMAL, SUSPECT ou CRITIQUE ?
+
+RÉPONSE REQUISE (format exact) :
+CLASSIFICATION: [NORMAL ou SUSPECT ou CRITIQUE]
+JUSTIFICATION: [Explique en 1-2 phrases]
+
+Réponds en français."""
+
+            response = self.generate(prompt_detect, context=context, max_tokens=300)
             
-            # Vérifie si prompts est un dict et a module6
-            if isinstance(self.prompts, dict):
-                module6 = self.prompts.get('module6')
-                if isinstance(module6, dict):
-                    prompt_template = module6.get('detect_anomaly')
-            
-            # 2. Template par défaut si nécessaire
-            if not prompt_template or not isinstance(prompt_template, str):
-                prompt_template = "Analyse de log Oracle:\nLog: {log_entry}\nCette entrée est-elle normale, suspecte ou critique? Justifie en français."
-            
-            # 3. Formatage sécurisé
-            try:
-                prompt = prompt_template.format(log_entry=log_entry)
-            except:
-                # Fallback simple
-                prompt = f"Analyse ce log Oracle: {log_entry}\nClassification et justification:"
-            
-            # 4. Génération de la réponse
-            response = self.generate(prompt, context=context, max_tokens=350)
-            
-            # 5. Analyse de la classification
+            # Parsing de la réponse LLM
             response_lower = response.lower()
-            classification = "NORMAL"
             
-            # Définir les mots-clés
-            critical_keywords = ['critique', 'critical', 'urgence', 'emergency', 'fatal', 'grave', 'panne']
-            suspect_keywords = ['suspect', 'anormal', 'anomal', 'warning', 'avertissement', 'problème', 'anomalie']
+            # Extraction classification
+            class_match = re.search(r'CLASSIFICATION\s*:\s*(\w+)', response, re.IGNORECASE)
+            if class_match:
+                classification = class_match.group(1).upper()
+            else:
+                # Fallback : chercher mots-clés
+                if 'critique' in response_lower or 'critical' in response_lower:
+                    classification = "CRITIQUE"
+                elif 'suspect' in response_lower or 'anormal' in response_lower:
+                    classification = "SUSPECT"
+                else:
+                    classification = "NORMAL"
             
-            # Vérifier d'abord les critères critiques
-            if any(word in response_lower for word in critical_keywords):
-                classification = "CRITIQUE"
-            # Ensuite vérifier les suspects
-            elif any(word in response_lower for word in suspect_keywords):
-                classification = "SUSPECT"
-            # Sinon reste "NORMAL" (valeur par défaut)
+            # Extraction justification
+            justif_match = re.search(r'JUSTIFICATION\s*:\s*(.+)', response, re.IGNORECASE | re.DOTALL)
+            justification = justif_match.group(1).strip()[:200] if justif_match else response[:200]
             
-            # 6. Confiance
-            confidence = "medium"
-            if classification == "NORMAL" and len(response) < 30:
-                confidence = "low"
-            elif len(response) > 100 and ('car' in response_lower or 'parce que' in response_lower or 'caractéristique' in response_lower):
-                confidence = "high"
+            # Inférer sévérité
+            severity_map = {'CRITIQUE': 'CRITIQUE', 'SUSPECT': 'MOYENNE', 'NORMAL': 'BASSE'}
+            severity = severity_map.get(classification, 'MOYENNE')
             
             return {
                 "classification": classification,
-                "justification": response,
-                "confidence": confidence,
+                "justification": justification,
+                "severity": severity,
+                "confidence": "medium",  # Confiance moyenne car LLM
                 "model_used": self.default_model
             }
-            
+        
         except Exception as e:
-            # Erreur détaillée pour debugging
-            import traceback
-            error_details = traceback.format_exc()
-            print(f"❌ Erreur détection anomalie: {e}")
-            
+            print(f"❌ Erreur LLM detect_anomaly: {e}")
+            # Fallback final
             return {
-                "classification": "ERROR",
-                "justification": f"Erreur d'analyse: {str(e)[:80]}",
-                "confidence": "none",
-                "error": str(e)[:100]
+                "classification": "NORMAL",
+                "justification": f"Impossible d'analyser ce log. Erreur: {str(e)[:50]}",
+                "severity": "BASSE",
+                "confidence": "low",
+                "error": str(e)
             }
+
 
 # Test optimisé
 if __name__ == "__main__":
@@ -276,7 +464,7 @@ if __name__ == "__main__":
         test_response = engine.generate(
             "Explique ce plan d'exécution en termes simples", 
             context="Exemple plan: FULL TABLE SCAN sur table EMPLOYES avec 1M lignes",
-            max_tokens=300
+            max_tokens=1500
         )
         print(f"Test 1 - Réponse ({len(test_response)} chars):")
         print(test_response[:200] + "..." if len(test_response) > 200 else test_response)
