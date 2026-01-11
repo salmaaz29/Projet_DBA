@@ -1,0 +1,49 @@
+{
+  "sql_id": "75gdwsfygzwtu",
+  "sql_query": "SELECT /*+ NO_INDEX(test_orders) FULL(test_orders) */ COUNT(*) FROM TEST_ORDERS WHERE ORDER_DATE > DATE '2023-01-01'",
+  "timestamp": "2026-01-10T20:24:01.637284",
+  "sql_full": "SELECT /*+ NO_INDEX(test_orders) FULL(test_orders) */ COUNT(*) FROM TEST_ORDERS WHERE ORDER_DATE > DATE '2023-01-01'",
+  "explication_plan": "En français, ce plan d'exécution est présenté comme suit :\n\n1. Un premier opérateur SELECT est exécuté avec une seule ligne de requête, qui retourne les données du tableau X (donc sans index).\n2. L'opérateur COUNT() est exécuté sur la colonne Y (représentant le nombre d'éléments dans l'ensemble X), et ceci peut être effectué sans index pour réduire la taille de la base de données.\n3. Le plan de traitement est ensuite construit en utilisant les ressources du système de gestion de bases de données Oracle, qui contrôlent la sélection des données du tableau X et le tri des lignes Y.\n4. L'opérateur FULL() est exécuté pour obtenir tous les éléments du tableau X (en utilisant les index si disponibles), mais il n'est pas nécessaire de récupérer les lignes non sélectionnées car la fonction COUNT() ne s'applique pas aux données non sélectionnées.\n5. Le plan de traitement est ensuite construit en utilisant les ressources du système de gestion de bases de données Oracle pour exécuter le tri sur la colonne Y, ce qui permet d'obtenir les lignes de X sélectionnées et leurs valeurs de Y.\n6. L'opérateur COUNT() est exécuté sur la colonne Y (représentant le nombre d'éléments dans l'ensemble X) pour obtenir une nouvelle quantité de données, mais",
+  "points_couteux": "Exécution plan Oracle:\nPlan hash value: 2512933241\n---------------------------------------------------------------------------------------| Id| Operation TAGLINE\nTABLLEMP2 AS SELECT * FROM EMPLOYEES; ALTER TABLE EMPLOYEES PARALLEL 2; GROUPISING BY DEPARTMENT_ID; SELECT PLAN_TABLE_OUTPUT FROM DBMS_XPLAN.DISPLAY();\n----------------------------------------------| Id| Operation TAGLINE\nGRUPISING BY DEPARTMENT_ID; SELECT PLAN_TABLE_OUTPUT FROM TABLE(DBMS_XPLAN.DISPLAY());\n\n---------------------------------------------------------------------------------------| Id| Operation TAGLINE\nSELECT PLAN_TABLE_OUTPUT FROM DBMS_XPLAN.DISPLAY(); ----------------------------------------------| Id| Operation TAGLINE\n---------------------------------------------------------------------------------------| Id| Operation TAGLINE\n\nPoints les plus coûteux:\n1. SELECT STATEMENT: 100% (Coût total estimé = 100)\n2. GRUPISING BY DEPARTMENT_ID: 100% (Coût total estimé = 100)\n3. PLAN_TABLE_OUTPUT: 1",
+  "recommandations": [
+    {
+      "type": "LLM_SUGGESTION",
+      "description": "An index optimization:",
+      "sql": "",
+      "gain": "Variable"
+    },
+    {
+      "type": "LLM_SUGGESTION",
+      "description": "Name: TEST_ORDERS_ORDER_DATE_FULL_IX",
+      "sql": "",
+      "gain": "Variable"
+    },
+    {
+      "type": "LLM_SUGGESTION",
+      "description": "Description: Index to speed up searches for rows with specific order dates",
+      "sql": "",
+      "gain": "Variable"
+    }
+  ],
+  "metrique_avant_apres": {
+    "avant_cout": 10,
+    "avant_temps": 0.03,
+    "avant_rows": 5,
+    "apres_cout_estime": 9,
+    "reduction_estimee": "10.0%",
+    "apres_temps_estime": 0.027
+  },
+  "metrics": {
+    "elapsed_sec": 0.03,
+    "rows_processed": 5,
+    "executions": 5,
+    "disk_reads": 0,
+    "buffer_gets": 2925,
+    "optimizer_cost": 10
+  },
+  "problems": [],
+  "plan_text": "| Id | Operation | Object | Cost | Rows |\n|----|-----------|--------|------|------|\n| 0 | SELECT STATEMENT | None | 100 | 1 |",
+  "llm_used": true,
+  "analysis_mode": "llm",
+  "chatbot_response": "🔍 **Analyse de votre requête SQL**\n\n**Recommandations d'optimisation:**\n1. **LLM_SUGGESTION**: An index optimization:\n   Gain estimé: Variable\n2. **LLM_SUGGESTION**: Name: TEST_ORDERS_ORDER_DATE_FULL_IX\n   Gain estimé: Variable\n\n**Impact estimé:** Réduction de 10.0% possible\n\n💡 *Ces optimisations sont basées sur l'analyse du plan d'exécution.*"
+}

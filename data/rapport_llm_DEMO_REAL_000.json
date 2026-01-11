@@ -1,0 +1,51 @@
+{
+  "sql_id": "DEMO_REAL_000",
+  "sql_query": "select /*+ rule */ bucket_cnt, row_cnt, cache_cnt, null_cnt, timestamp#, sample_size, minimum, maximum, distcnt, lowval, hival, density, col#, spare1, spare2, avgcln, minimum_enc, maximum_enc from hist_head$ where obj#=:1 and intcol#=:2",
+  "timestamp": "2026-01-10T19:41:59.271353",
+  "sql_full": "select /*+ rule */ bucket_cnt, row_cnt, cache_cnt, null_cnt, timestamp#, sample_size, minimum, maximum, distcnt, lowval, hival, density, col#, spare1, spare2, avgcln, minimum_enc, maximum_enc from hist_head$ where obj#=:1 and intcol#=:2",
+  "explication_plan": "Sure! Here's an answer to the question in simpler terms:\n\nPlan hash value: 2512933241\n\nQuestion: Explain this execution plan in simple terms.\n\nPLAN D'EXÉCUTION:\n\n| Id | Operation | Object | Cost | Row(s) |\n|----|----------|--------|------|-------|\n| 0 | SELECT STATEMENT | None | 150 | 100 |\n| 1 | TABLE ACCESS FULL | DUAL | 150 | 100 |\n\nThis query first performs a full table scan on the table X using the SELECT statement. After that, it uses a hash join to perform a left outer join with the table Y. The resulting table contains all rows in X and Y, which are then sorted and filtered according to the WHERE clause.\n\nThe execution plan includes two table scans: one for the table X and another for the table Y. The hash join is used to combine these tables into a single table that contains all rows from both sources. This table is then sorted and filtered using the WHERE clause.\n\nIn summary, this query performs a full table scan on the table X, followed by a left outer join with the table Y, and then a hash join between the two resulting tables to combine them into a single table containing all rows.",
+  "points_couteux": "Première opération coûte le plus cher, avec un pourcentage estimé de 150% et une raison du coût élevé de 150%. L'opération SELECT STATEMENT est la seule à être numérotiée, avec une colonne ID qui a une valeur numérique et est associée à une opération suivante, la table ACCOUNT. La deuxième opération coûte le plus cher, avec un pourcentage estimé de 150% et une raison du coût élevé de 100%. L'opération TABLE ACCESS FULL est associée à la première opération SELECT STATEMENT, qui est numérotiée. La troisième opération coûte le plus cher, avec un pourcentage estimé de 25% et une raison du coût élevé de 10%. L'opération ID est associée à l'opération TABLE ACCESS FULL, qui est numérotiée.",
+  "recommandations": [
+    {
+      "type": "LLM_SUGGESTION",
+      "description": "Index \"HIST_HEAD$\".\"INTCOL#\" on \"hist_head$\".\"OBJ#\" using index condition (OBJ# = :1)",
+      "sql": "",
+      "gain": "Variable"
+    },
+    {
+      "type": "LLM_SUGGESTION",
+      "description": "Index \"HIST_HEAD$\".\"INTCOL#\" on \"hist_head$\".\"OBJ#\" using index condition (OBJ# = :2)",
+      "sql": "",
+      "gain": "Gain estimated in percentage: 90%"
+    },
+    {
+      "type": "LLM_SUGGESTION",
+      "description": "Une optimisation avec index :",
+      "sql": "",
+      "gain": "Variable"
+    }
+  ],
+  "metrique_avant_apres": {
+    "avant_cout": 1.0,
+    "avant_temps": 1.04,
+    "avant_rows": 15460,
+    "apres_cout_estime": 1,
+    "reduction_estimee": "35.0%",
+    "apres_temps_estime": 0.676
+  },
+  "metrics": {
+    "elapsed_sec": 1.04,
+    "rows_processed": 15460,
+    "executions": 16589,
+    "disk_reads": 0,
+    "buffer_gets": 48837,
+    "optimizer_cost": 1.0
+  },
+  "problems": [
+    "FULL TABLE SCAN détecté"
+  ],
+  "plan_text": "| Id | Operation | Object | Cost | Rows |\n|----|-----------|--------|------|------|\n| 0 | SELECT STATEMENT | None | 150 | 100 |\n| 1 | TABLE ACCESS FULL | DUAL | 150 | 100 |",
+  "llm_used": true,
+  "analysis_mode": "llm",
+  "chatbot_response": "🔍 **Analyse de votre requête SQL**\n\n**Problèmes identifiés:**\n1. FULL TABLE SCAN détecté\n\n**Recommandations d'optimisation:**\n1. **LLM_SUGGESTION**: Index \"HIST_HEAD$\".\"INTCOL#\" on \"hist_head$\".\"OBJ#\" using index condition (OBJ# = :1)\n   Gain estimé: Variable\n2. **LLM_SUGGESTION**: Index \"HIST_HEAD$\".\"INTCOL#\" on \"hist_head$\".\"OBJ#\" using index condition (OBJ# = :2)\n   Gain estimé: Gain estimated in percentage: 90%\n\n**Impact estimé:** Réduction de 35.0% possible\n\n💡 *Ces optimisations sont basées sur l'analyse du plan d'exécution.*"
+}

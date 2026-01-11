@@ -1,0 +1,34 @@
+-- ============================================
+-- STRATÉGIE RMAN: CRITIQUE 24/7 (Banque, Bourse)
+-- Généré: 2026-01-11 17:49
+-- Base: 2.5 GB - HIGH CRITICALITY
+-- ============================================
+
+-- Configuration RMAN
+CONFIGURE COMPRESSION ALGORITHM 'BASIC';
+CONFIGURE RETENTION POLICY TO RECOVERY WINDOW OF 30 DAYS;
+CONFIGURE CONTROLFILE AUTOBACKUP ON;
+CONFIGURE DEVICE TYPE DISK PARALLELISM 4;
+
+-- Script backup complet hebdomadaire
+RUN {
+  ALLOCATE CHANNEL ch1 DEVICE TYPE DISK FORMAT '/backup/critical/full_%T_%U.bkp';
+  ALLOCATE CHANNEL ch2 DEVICE TYPE DISK FORMAT '/backup/critical/full_%T_%U.bkp';
+  ALLOCATE CHANNEL ch3 DEVICE TYPE DISK FORMAT '/backup/critical/full_%T_%U.bkp';
+  ALLOCATE CHANNEL ch4 DEVICE TYPE DISK FORMAT '/backup/critical/full_%T_%U.bkp';
+
+  BACKUP AS COMPRESSED BACKUPSET DATABASE PLUS ARCHIVELOG DELETE INPUT;
+  BACKUP CURRENT CONTROLFILE FORMAT '/backup/critical/control_%T_%U.ctl';
+
+  RELEASE CHANNEL ch1;
+  RELEASE CHANNEL ch2;
+  RELEASE CHANNEL ch3;
+  RELEASE CHANNEL ch4;
+}
+
+-- Validation et nettoyage
+RESTORE DATABASE VALIDATE;
+DELETE NOPROMPT OBSOLETE;
+
+-- Rapport de backup
+LIST BACKUP SUMMARY;

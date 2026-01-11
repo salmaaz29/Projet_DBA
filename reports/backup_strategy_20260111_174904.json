@@ -1,0 +1,42 @@
+{
+  "timestamp": "2026-01-11T17:49:04.350061",
+  "input": {
+    "rpo_hours": 1.0,
+    "rto_hours": 1.0,
+    "budget": "HIGH",
+    "db_size_gb": 2.5,
+    "transactions_per_hour": 600,
+    "criticality": "HIGH"
+  },
+  "strategy": {
+    "key": "CRITICAL_24_7",
+    "name": "CRITIQUE 24/7 (Banque, Bourse)",
+    "description": "Production critique avec RPO < 1h",
+    "backup_type": "complète",
+    "frequency": "horaire",
+    "retention_days": 30,
+    "storage_location": "/backup/critical/",
+    "script_type": "RMAN"
+  },
+  "costs": {
+    "full_backup_size_gb": 2.5,
+    "daily_incremental_gb": 0,
+    "archive_logs_daily_gb": 0.25,
+    "total_storage_gb": 1807.5,
+    "monthly_cost_eur": 180.75,
+    "annual_cost_eur": 2169.0
+  },
+  "backup_script": "-- ============================================\n-- STRATÉGIE RMAN: CRITIQUE 24/7 (Banque, Bourse)\n-- Généré: 2026-01-11 17:49\n-- Base: 2.5 GB - HIGH CRITICALITY\n-- ============================================\n\n-- Configuration RMAN\nCONFIGURE COMPRESSION ALGORITHM 'BASIC';\nCONFIGURE RETENTION POLICY TO RECOVERY WINDOW OF 30 DAYS;\nCONFIGURE CONTROLFILE AUTOBACKUP ON;\nCONFIGURE DEVICE TYPE DISK PARALLELISM 4;\n\n-- Script backup complet hebdomadaire\nRUN {\n  ALLOCATE CHANNEL ch1 DEVICE TYPE DISK FORMAT '/backup/critical/full_%T_%U.bkp';\n  ALLOCATE CHANNEL ch2 DEVICE TYPE DISK FORMAT '/backup/critical/full_%T_%U.bkp';\n  ALLOCATE CHANNEL ch3 DEVICE TYPE DISK FORMAT '/backup/critical/full_%T_%U.bkp';\n  ALLOCATE CHANNEL ch4 DEVICE TYPE DISK FORMAT '/backup/critical/full_%T_%U.bkp';\n\n  BACKUP AS COMPRESSED BACKUPSET DATABASE PLUS ARCHIVELOG DELETE INPUT;\n  BACKUP CURRENT CONTROLFILE FORMAT '/backup/critical/control_%T_%U.ctl';\n\n  RELEASE CHANNEL ch1;\n  RELEASE CHANNEL ch2;\n  RELEASE CHANNEL ch3;\n  RELEASE CHANNEL ch4;\n}\n\n-- Validation et nettoyage\nRESTORE DATABASE VALIDATE;\nDELETE NOPROMPT OBSOLETE;\n\n-- Rapport de backup\nLIST BACKUP SUMMARY;\n",
+  "llm_recommendation": "En tant qu'expert DBA (Database Administrator) Oracle et spécialiste de l'optimisation des performances, je vais vous fournir des conseils clairs et pratiques basés sur les meilleures pratiques Oracle.\n\n### 1. **Conception et Planification de la Base de Données**\n\n- **Normalisation et Dénormalisation**: Assurez-vous que votre base de données est correctement normalisée pour éviter les redondances de données et les problèmes de mise à jour. Cependant, dans certains cas, une dénormalisation ciblée peut améliorer les performances en réduisant le nombre de jointures nécessaires.\n- **Indexation**: Planifiez une stratégie d'indexation efficace. Les index peuvent considérablement améliorer les performances des requêtes, mais ils peuvent également ralentir les opérations d'insertion, mise à jour et suppression.\n\n### 2. **Optimisation des Performances**\n\n- **Analyse des Statistiques**: Assurez-vous que les statistiques à jour sur les objets de la base de données (comme les tables et les index) sont maintenues. Utilisez `DBMS_STATS` pour collecter et mettre à jour ces statistiques.\n- **Utilisation des Plans d'Exécution**: Examinez les plans d'exécution des requêtes pour comprendre comment Oracle exécute les requêtes. Utilisez `EXPLAIN PLAN` et `SQL Trace`/`TKPROF` pour analyser les performances des requêtes.\n- **Optimisation des Requêtes**: \n  - **Limitez les lignes traitées** : Utilisez des conditions `WHERE` pour limiter les données traitées.\n  - **Évitez les fonctions dans les clauses WHERE** : Cela peut empêcher l'utilisation des index.\n  - **Utilisez des jointures efficaces** : Choisissez la méthode de jointure appropriée (par exemple, `INNER JOIN` au lieu de `CROSS JOIN` avec une condition).\n\n### 3. **Gestion de la Mémoire**\n\n- **SGA (System Global Area) et PGA (Program Global Area)** : Ajustez correctement les tailles de SGA et PGA. Une taille adéquate de la mémoire partagée (SGA) et de la mémoire processus (PGA) est cruciale pour de bonnes performances.\n- **Utilisation de la Cache de Buffer** : Assurez-vous que la taille du cache de buffer est suffisante pour contenir les données fréquemment accédées.\n\n### 4. **Espace de Stockage et Gestion des Fichiers**\n\n- **Utilisation des groupes de fichiers** : Organisez les fichiers de données en groupes de fichiers pour une meilleure gestion et répartition des E/S.\n- **Surveillance de l'Espace Disponible** : Surveillez régulièrement l'espace disponible sur les disques et ajustez la taille des fichiers de données selon les besoins.\n\n### 5. **Sauvegarde et Récupération**\n\n- **Sauvegardes Régulières** : Effectuez des sauvegardes complètes et partielles régulièrement pour garantir la possibilité de récupération en cas de défaillance.\n- **Test de Récupération** : Testez périodiquement vos procédures de récupération pour vous assurer qu'elles sont efficaces.\n\n### 6. **Sécurité**\n\n- **Utilisation des Profils et des Rôles** : Gérez les autorisations et les droits d'accès via des rôles et des profils pour simplifier la gestion de la sécurité.\n- **Chiffrement** : Considérez le chiffrement des données sensibles au repos et en transit.\n\n### 7. **Surveillance et Maintenance**\n\n- **Utilisation d'Outils de Surveillance** : Utilisez des outils comme Oracle Enterprise Manager, SQL Developer, et des scripts maison pour surveiller les performances et la santé de la base de données.\n- **Application des Correctifs** : Appliquez régulièrement les correctifs de sécurité et les mises à jour pour protéger votre base de données contre les vulnérabilités.\n\nEn suivant ces conseils et en restant à jour avec les dernières technologies et bonnes pratiques Oracle, vous serez en mesure de concevoir, de mettre en œuvre et de maintenir des bases de données Oracle performantes et sécurisées.",
+  "llm_frequency_analysis": "... pour les snapshots de la base de données ?\n\nLa fréquence optimale pour les snapshots de la base de données dépend de plusieurs facteurs tels que la taille de la base de données, le volume de transactions, la criticité des données et les objectifs de reprise après sinistre. Cependant, voici quelques bonnes pratiques générales :\n\n*   **Fréquence des snapshots** : Il est recommandé de prendre des snapshots réguliers de la base de données pour garantir la possibilité de restauration à un point spécifique dans le temps en cas de problème. Une fréquence commune est :\n    *   Toutes les heures pour les bases de données critiques avec un volume élevé de transactions.\n    *   Toutes les 4 à 8 heures pour les bases de données moyennement critiques.\n    *   Une fois par jour pour les bases de données peu critiques.\n\n*   **Type de snapshots** : Il existe différents types de snapshots, notamment :\n    *   **Snapshots physiques** : ils créent une copie exacte de la base de données à un moment donné. Ils sont généralement utilisés pour la sauvegarde et la reprise après sinistre.\n    *   **Snapshots logiques** : ils capturent l'état logique de la base de données, y compris les transactions en cours. Ils sont souvent utilisés pour la reprise à un point spécifique dans le temps.\n\n*   **Stockage des snapshots** : assurez-vous d'avoir suffisamment d'espace de stockage pour les snapshots et envisagez d'utiliser des solutions de stockage efficaces telles que des disques durs externes ou des services de stockage cloud.\n\n*   **Automatisation** : configurez les snapshots pour qu'ils soient pris automatiquement à l'aide de scripts ou d'outils de gestion de base de données pour minimiser les erreurs manuelles.\n\n*   **Test des snapshots** : testez régulièrement les snapshots pour vous assurer qu'ils peuvent être utilisés avec succès pour restaurer la base de données.\n\nEn résumé, la meilleure fréquence pour les snapshots de la base de données dépend des besoins spécifiques de votre organisation. Il est essentiel de prendre en compte les facteurs mentionnés ci-dessus et de mettre en place une stratégie de sauvegarde et de reprise après sinistre adaptée à votre environnement.",
+  "implementation_steps": [
+    "0. Mettre en place la réplication Data Guard",
+    "1. Créer les répertoires de stockage",
+    "2. Configurer les permissions Oracle",
+    "3. Tester la connectivité au stockage",
+    "4. Programmer les jobs de backup",
+    "5. Configurer la surveillance",
+    "6. Effectuer un test de restauration",
+    "7. Configurer les alertes temps réel"
+  ]
+}

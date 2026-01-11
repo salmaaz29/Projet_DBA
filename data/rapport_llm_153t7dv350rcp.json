@@ -1,0 +1,44 @@
+{
+  "sql_id": "153t7dv350rcp",
+  "sql_query": "SELECT\n    o.order_id,\n    o.order_date,\n    o.amount,\n    c.customer_name,\n    c.email\nFROM test_orders o\nLEFT JOIN test_customers c ON o.customer_id = c.customer_id\nWHERE o.amount > 500",
+  "timestamp": "2026-01-11T00:03:24.816784",
+  "sql_full": "SELECT\n    o.order_id,\n    o.order_date,\n    o.amount,\n    c.customer_name,\n    c.email\nFROM test_orders o\nLEFT JOIN test_customers c ON o.customer_id = c.customer_id\nWHERE o.amount > 500",
+  "explication_plan": "La réponse suivante est une réponse en français technique et concise pour expliquer le plan d'exécution d'une requête SQL dans laquelle l'objet de la requête est un tableau d'entiers, les opérations sont exécutées parallèlement sur plusieurs threads, et la base de données est utilisée comme un système de stockage.\n\nLe plan d'exécution du script est ainsi :\n\n1. Le premier plan d'exécution est l'une des opérations d'analyse de la requête SQL dans laquelle on commence par un scan complet de la table X. Les opérations sont exécutées parallèlement sur plusieurs threads, et chaque thread utilise une instance distincte de la base de données comme un système de stockage.\n2. Le deuxième plan d'exécution est l'une des opérations d'analyse de la requête SQL qui vient d'être exécutées dans le premier plan d'exécution, et on affiche les résultats. Les opérations sont exécutées parallèlement sur plusieurs threads,",
+  "points_couteux": "Pour réponder à cette question, il faut suivre un chemin de la base de données Oracle pour obtenir les informations sur le plan d'exécution et les performances des opérations.\n\nLe plan d'exécution est présenté dans le tableau 0, qui montre l'ID, l'opération, l'objet, le coût total et les lignes en ligne dans la requête SELECT STATEMENT. L'ID correspond à l'ID de l'opération (0 pour le SELECT STATEMENT), le nom de l'opération (SELECT STATEMENT) et le coût total (1500).\n\nPour obtenir les informations sur les opérations les plus coûteuses, il faut déboguer la requête SELECT STATEMENT et examiner les lignes 0 à 3 du tableau 2.\n\nLe premier opération est",
+  "recommandations": [
+    {
+      "type": "STATISTIQUES",
+      "description": "Mettre à jour les statistiques de la table TEST_ORDERS",
+      "sql": "EXEC DBMS_STATS.GATHER_TABLE_STATS(USER, 'TEST_ORDERS');",
+      "gain": "10-30%"
+    },
+    {
+      "type": "ANALYSE",
+      "description": "Exécuter EXPLAIN PLAN FOR pour voir le détail",
+      "sql": "EXPLAIN PLAN FOR votre_requete; SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);",
+      "gain": "N/A (diagnostic)"
+    }
+  ],
+  "metrique_avant_apres": {
+    "avant_cout": 24.0,
+    "avant_temps": 0.051,
+    "avant_rows": 10148,
+    "apres_cout_estime": 21,
+    "reduction_estimee": "10.0%",
+    "apres_temps_estime": "0.046s"
+  },
+  "metrics": {
+    "elapsed_sec": 0.051,
+    "cpu_sec": 0.051,
+    "rows_processed": 10148,
+    "executions": 2,
+    "disk_reads": 0,
+    "buffer_gets": 810,
+    "optimizer_cost": 24.0
+  },
+  "problems": [],
+  "plan_text": "📋 PLAN D'EXÉCUTION :\n════════════════════════════════════════════════════════════\n| ID | OPÉRATION | OBJET | COÛT | LIGNES |\n|----|-----------|-------|------|--------|\n| 0  | SELECT STATEMENT     |                 | 1500 |  10000 |\n| 1  | HASH JOIN            |                 | 1500 |  10000 |\n| 2  | TABLE ACCESS FULL    | TABLE1          |  800 |   5000 |\n| 3  | TABLE ACCESS FULL    | TABLE2          |  700 |   5000 |\n════════════════════════════════════════════════════════════",
+  "llm_used": true,
+  "analysis_mode": "llm",
+  "chatbot_response": "🔍 **Analyse de votre requête SQL**\n\n**Recommandations d'optimisation:**\n1. **STATISTIQUES** : Mettre à jour les statistiques de la table TEST_ORDERS\n   → Gain estimé : 10-30%\n2. **ANALYSE** : Exécuter EXPLAIN PLAN FOR pour voir le détail\n   → Gain estimé : N/A (diagnostic)\n\n**Impact estimé :** Réduction de 10.0% possible\n\n💡 *Ces optimisations sont basées sur l'analyse du plan d'exécution.*"
+}

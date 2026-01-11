@@ -1,0 +1,50 @@
+{
+  "sql_id": "465fchakhm6ua",
+  "sql_query": "SELECT\n    EXTRACT(MONTH FROM order_date) as month,\n    EXTRACT(YEAR FROM order_date) as year,\n    COUNT(*) as order_count,\n    SUM(amount) as total_amount,\n    AVG(amount) as avg_amount\nFROM test_orders\nGROUP BY EXTRACT(MONTH FROM order_date), EXTRACT(YEAR FROM order_date)\nORDER BY year, month",
+  "timestamp": "2026-01-11T00:06:10.972069",
+  "sql_full": "SELECT\n    EXTRACT(MONTH FROM order_date) as month,\n    EXTRACT(YEAR FROM order_date) as year,\n    COUNT(*) as order_count,\n    SUM(amount) as total_amount,\n    AVG(amount) as avg_amount\nFROM test_orders\nGROUP BY EXTRACT(MONTH FROM order_date), EXTRACT(YEAR FROM order_date)\nORDER BY year, month",
+  "explication_plan": "!  a more detailed explanation in simpler terms:\n\n1.  execution plan is as follows:\n\n| ID | Operation | Object | Cost | Lines |\n|----|----------|-------|------|--------|\n| 0   | SELECT STATEMENT      |                 | 1200 |    100 |\n| 1   | SORT GROUP BY         | MA_TABLE       |  800 |  10000 |\n\n2.  first line is the SELECT statement, which selects all columns from the MA_TABLE table.\n\n3.  second line is the SORT GROUP BY operation, which sorts the results based on the extracted month and year columns.\n\n4.  third line is the TABLE ACCESS FULL operation, which retrieves all rows from the selected table using a full table scan.\n\n5.  fourth line is the AVG function, which calculates the average order amount for each month/year combination.\n\n6.  fifth line is the SUM function, which sums up the total amount of orders for each month/year combination.\n\n7. Finally, the",
+  "points_couteux": ", here is a   to the question: Analyzing this Oracle execution plan and identifying the three most costly operations:\n\nQuestion: What are the three most costly operations in this Oracle execution plan and how much do they cost?\n\n📋 Plan d'exécution :\n\n| ID | OPERATION | OBJET | COÛT | LIGNES |\n|----|----------|------|------|--------|\n| 0 | SELECT STATEMENT |         | 1200 |    100 |\n| 1 | SOURT GROUPIMMEZ |        | 1200 |    100 |\n| 2 | TABLE ACCESS FULL | MA_TABLE |  800 |   10000 |\n\n\nLe premier opération est le SELECT STATEMENT, qui a un coût total estim",
+  "recommandations": [
+    {
+      "type": "LLM_SUGGESTION",
+      "description": "Index scan with an index on the \"order_date\" column (year and month are indexed separately)",
+      "sql": "",
+      "gain": "Variable"
+    },
+    {
+      "type": "LLM_SUGGESTION",
+      "description": "Different join orders to optimize for better performance:",
+      "sql": "",
+      "gain": "75%"
+    },
+    {
+      "type": "LLM_SUGGESTION",
+      "description": "Utilisez une optim",
+      "sql": "",
+      "gain": "Variable"
+    }
+  ],
+  "metrique_avant_apres": {
+    "avant_cout": 21.0,
+    "avant_temps": 0.027,
+    "avant_rows": 72,
+    "apres_cout_estime": 18,
+    "reduction_estimee": "10.0%",
+    "apres_temps_estime": "0.024s"
+  },
+  "metrics": {
+    "elapsed_sec": 0.027,
+    "cpu_sec": 0.019,
+    "rows_processed": 72,
+    "executions": 3,
+    "disk_reads": 0,
+    "buffer_gets": 199,
+    "optimizer_cost": 21.0
+  },
+  "problems": [],
+  "plan_text": "📋 PLAN D'EXÉCUTION :\n════════════════════════════════════════════════════════════\n| ID | OPÉRATION | OBJET | COÛT | LIGNES |\n|----|-----------|-------|------|--------|\n| 0  | SELECT STATEMENT     |                 | 1200 |    100 |\n| 1  | SORT GROUP BY        |                 | 1200 |    100 |\n| 2  | TABLE ACCESS FULL    | MA_TABLE        |  800 |  10000 |\n════════════════════════════════════════════════════════════",
+  "llm_used": true,
+  "analysis_mode": "llm",
+  "chatbot_response": "🔍 **Analyse de votre requête SQL**\n\n**Recommandations d'optimisation:**\n1. **LLM_SUGGESTION** : Index scan with an index on the \"order_date\" column (year and month are indexed separately)\n2. **LLM_SUGGESTION** : Different join orders to optimize for better performance:\n   → Gain estimé : 75%\n3. **LLM_SUGGESTION** : Utilisez une optim\n\n**Impact estimé :** Réduction de 10.0% possible\n\n💡 *Ces optimisations sont basées sur l'analyse du plan d'exécution.*"
+}

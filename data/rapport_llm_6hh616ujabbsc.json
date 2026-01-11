@@ -1,0 +1,47 @@
+{
+  "sql_id": "6hh616ujabbsc",
+  "sql_query": "SELECT * FROM test_customers\nWHERE customer_name LIKE '%Customer%'\n   OR email LIKE '%@%'",
+  "timestamp": "2026-01-11T00:05:27.080455",
+  "sql_full": "SELECT * FROM test_customers\nWHERE customer_name LIKE '%Customer%'\n   OR email LIKE '%@%'",
+  "explication_plan": "La planification d'exécution suivante pour cette requête est similaire à celle-ci:\n\n1. La première ligne du plan d'exécution est une instruction SELECT, qui récupère les données de la table X (MA_TABLE) et les stocke dans un tableau ou une variable.\n\n2. La deuxième ligne du plan d'exécution est une instruction FROM, qui spécifie le nom de la table à partir de laquelle l'objet de requête (Oracle Database) se référera pour obtenir les données. Dans notre cas, l'objet de requête sera MA_TABLE.\n\n3. La troisième ligne du plan d'exécution est une instruction WHERE, qui contraint la table à retourner des données correspondant à un certain critère. Dans cet exemple, nous utilisons le critère \"customer_name LIKE '%Customer%'\", qui signifie que les noms de clients doivent être inclus dans la requête.\n\n4. La quatrième ligne du plan d'exécution est une instruction JOIN, qui récupère des données des tables MA_TABLE et MA_TABLINE",
+  "points_couteux": "Pour réponder à cette question, nous allons analyser le plan d'exécution Oracle suivant et identifier les trois opérations les plus coûteuses avec leurs prochains coûts estimés, ainsi que leur raison de ces coûts élevés. \n\nPlan d'exécution :\n_______________________| Id | Operation | Nam | Coût | Lignes\n-------------------------|-----|----------|------|-------|--------\nSELECT STATEMENT         | 0   |                 |      |     5000 |\nTABLE ACCESS FULL        | 1   | MA_TABLE     |      |     5000 |\n_______________________| Id | Operation | Nam | Coût | Lignes\n\nPourcentage estimé du coût total :\n1. Nom de l'opération (SELECT STATEMENT) - 1000\n2.",
+  "recommandations": [
+    {
+      "type": "REECRITURE",
+      "description": "Remplacer SELECT * par colonnes spécifiques sur TEST_CUSTOMERS",
+      "sql": "SELECT col1, col2, col3 FROM TEST_CUSTOMERS WHERE ...",
+      "gain": "30-50%"
+    },
+    {
+      "type": "OPTIMISATION",
+      "description": "Éviter LIKE avec % au début, utiliser recherche plein texte",
+      "sql": "-- Option 1: WHERE UPPER(colonne) LIKE UPPER('prefix%')",
+      "gain": "50-70%"
+    }
+  ],
+  "metrique_avant_apres": {
+    "avant_cout": 4.0,
+    "avant_temps": 0.03,
+    "avant_rows": 500,
+    "apres_cout_estime": 2,
+    "reduction_estimee": "32.5%",
+    "apres_temps_estime": "0.020s"
+  },
+  "metrics": {
+    "elapsed_sec": 0.03,
+    "cpu_sec": 0.026,
+    "rows_processed": 500,
+    "executions": 1,
+    "disk_reads": 0,
+    "buffer_gets": 40,
+    "optimizer_cost": 4.0
+  },
+  "problems": [
+    "SELECT * - récupère toutes les colonnes (coûteux en I/O)",
+    "LIKE avec wildcard initial '%' - empêche l'utilisation d'index"
+  ],
+  "plan_text": "📋 PLAN D'EXÉCUTION :\n════════════════════════════════════════════════════════════\n| ID | OPÉRATION | OBJET | COÛT | LIGNES |\n|----|-----------|-------|------|--------|\n| 0  | SELECT STATEMENT     |                 | 1000 |   5000 |\n| 1  | TABLE ACCESS FULL    | MA_TABLE        | 1000 |   5000 |\n════════════════════════════════════════════════════════════",
+  "llm_used": true,
+  "analysis_mode": "llm",
+  "chatbot_response": "🔍 **Analyse de votre requête SQL**\n\n**Problèmes identifiés:**\n1. SELECT * - récupère toutes les colonnes (coûteux en I/O)\n2. LIKE avec wildcard initial '%' - empêche l'utilisation d'index\n\n**Recommandations d'optimisation:**\n1. **REECRITURE** : Remplacer SELECT * par colonnes spécifiques sur TEST_CUSTOMERS\n   → Gain estimé : 30-50%\n2. **OPTIMISATION** : Éviter LIKE avec % au début, utiliser recherche plein texte\n   → Gain estimé : 50-70%\n\n**Impact estimé :** Réduction de 32.5% possible\n\n💡 *Ces optimisations sont basées sur l'analyse du plan d'exécution.*"
+}

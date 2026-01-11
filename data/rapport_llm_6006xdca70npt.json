@@ -1,0 +1,53 @@
+{
+  "sql_id": "6006xdca70npt",
+  "sql_query": "SELECT * FROM test_orders\nWHERE status = 'COMPLETED'\n   OR amount > 800\n   OR order_date < DATE '2023-03-01'",
+  "timestamp": "2026-01-11T00:04:45.053658",
+  "sql_full": "SELECT * FROM test_orders\nWHERE status = 'COMPLETED'\n   OR amount > 800\n   OR order_date < DATE '2023-03-01'",
+  "explication_plan": "Vous pouvez ainsi réponse à votre question en utilisant une syntaxe concise et technique. Pour cette requête, vous utilisez les clauses EXPLAIN PLAN FOR pour décrire le plan d'exécution de la requête. L'exemple suivant explique ce plan d'exécution en termes simples :\n\nPLAN D'EXÉCUTION:\n📋 PLAN D'EXÉCUTION :\n════════════════════════════════════\n| ID | OPÉRATION | OBJET | COÛT | LIGNES |\n|----|-----------|-------|------|--------|\n| 0   | SELECT STATEMENT      |                 | 1000 |   5000 |\n| 1   | TABLE ACCESS FULL     | MA_TABLE         | 1000 |   5000 |",
+  "points_couteux": "Question: Analyze this Oracle execution plan and identify the three most costly operations, taking into account their estimated total cost and reason for elevated costs.\n\nAnswer:  query \"SELECT STATEMENT\" is estimated to have a total cost of 1000 lines, while the table access full (MA_TABLE) operation has a total cost of 1000 lines.  estimated total cost of the two operations combined is 2512933241 lines.\n\nTo identify these three operations, we can list them numerically and sort them by their estimated total cost in descending order:\n\n1. SELECT STATEMENT (estimated cost = 1000)\n2. TABLE ACCESS FULL (estimated cost = 2512933241)\n\n estimated total cost of the two operations combined is therefore 25129332",
+  "recommandations": [
+    {
+      "type": "LLM_SUGGESTION",
+      "description": "Index optimization:",
+      "sql": "- Create index on test_orders(status, amount, order_date) to improve query performance",
+      "gain": "36%"
+    },
+    {
+      "type": "LLM_SUGGESTION",
+      "description": "Optimisation par index:",
+      "sql": "",
+      "gain": "Variable"
+    },
+    {
+      "type": "REECRITURE",
+      "description": "Remplacer SELECT * par colonnes spécifiques sur TEST_ORDERS",
+      "sql": "SELECT col1, col2, col3 FROM TEST_ORDERS WHERE ...",
+      "gain": "30-50%"
+    }
+  ],
+  "metrique_avant_apres": {
+    "avant_cout": 20.0,
+    "avant_temps": 0.035,
+    "avant_rows": 4110,
+    "apres_cout_estime": 10,
+    "reduction_estimee": "47.5%",
+    "apres_temps_estime": "0.018s"
+  },
+  "metrics": {
+    "elapsed_sec": 0.035,
+    "cpu_sec": 0.034,
+    "rows_processed": 4110,
+    "executions": 1,
+    "disk_reads": 0,
+    "buffer_gets": 335,
+    "optimizer_cost": 20.0
+  },
+  "problems": [
+    "SELECT * - récupère toutes les colonnes (coûteux en I/O)",
+    "Littéral DATE '...' - pourrait causer des problèmes de conversion"
+  ],
+  "plan_text": "📋 PLAN D'EXÉCUTION :\n════════════════════════════════════════════════════════════\n| ID | OPÉRATION | OBJET | COÛT | LIGNES |\n|----|-----------|-------|------|--------|\n| 0  | SELECT STATEMENT     |                 | 1000 |   5000 |\n| 1  | TABLE ACCESS FULL    | MA_TABLE        | 1000 |   5000 |\n════════════════════════════════════════════════════════════",
+  "llm_used": true,
+  "analysis_mode": "llm",
+  "chatbot_response": "🔍 **Analyse de votre requête SQL**\n\n**Problèmes identifiés:**\n1. SELECT * - récupère toutes les colonnes (coûteux en I/O)\n2. Littéral DATE '...' - pourrait causer des problèmes de conversion\n\n**Recommandations d'optimisation:**\n1. **LLM_SUGGESTION** : Index optimization:\n   → Gain estimé : 36%\n2. **LLM_SUGGESTION** : Optimisation par index:\n3. **REECRITURE** : Remplacer SELECT * par colonnes spécifiques sur TEST_ORDERS\n   → Gain estimé : 30-50%\n\n**Impact estimé :** Réduction de 47.5% possible\n\n💡 *Ces optimisations sont basées sur l'analyse du plan d'exécution.*"
+}

@@ -1,0 +1,42 @@
+{
+  "sql_id": "SIM001",
+  "sql_query": "SELECT * FROM orders WHERE order_date > '2023-01-01'",
+  "timestamp": "2026-01-11T15:42:50.826976",
+  "sql_full": "SELECT * FROM orders WHERE order_date > '2023-01-01' ORDER BY order_date DESC",
+  "explication_plan": "Analyse manuelle disponible",
+  "points_couteux": "Analyse manuelle disponible",
+  "recommandations": [
+    {
+      "type": "REECRITURE",
+      "description": "Remplacer SELECT * par colonnes spécifiques sur ORDERS",
+      "sql": "SELECT col1, col2 FROM ORDERS",
+      "gain": "30-50%"
+    },
+    {
+      "type": "STATISTIQUES",
+      "description": "Mettre à jour les statistiques sur ORDERS",
+      "sql": "EXEC DBMS_STATS.GATHER_TABLE_STATS(USER, 'ORDERS');",
+      "gain": "10-20%"
+    }
+  ],
+  "metrique_avant_apres": {
+    "avant_cout": 5000,
+    "apres_cout_estime": 3750,
+    "reduction_estimee": "25.0%"
+  },
+  "metrics": {
+    "elapsed_sec": 45.2,
+    "cpu_sec": 12.3,
+    "rows_processed": 1500000,
+    "executions": 5,
+    "disk_reads": 12000,
+    "buffer_gets": 45000,
+    "optimizer_cost": 5000
+  },
+  "problems": [
+    "SELECT * - récupère toutes les colonnes",
+    "Coût optimiseur élevé (5000)"
+  ],
+  "plan_text": "📋 PLAN D'EXÉCUTION :\n════════════════════════════════════════════════════════════\n| ID | OPÉRATION | OBJET | COÛT | LIGNES |\n|----|-----------|-------|------|--------|\n|  0 | SELECT STATEMENT     |                 | 5000 | 1500000 |\n|  1 | TABLE ACCESS FULL    | ORDERS          | 5000 | 1500000 |\n════════════════════════════════════════════════════════════",
+  "llm_used": false
+}

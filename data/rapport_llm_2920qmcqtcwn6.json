@@ -1,0 +1,47 @@
+{
+  "sql_id": "2920qmcqtcwn6",
+  "sql_query": "SELECT * FROM test_customers WHERE email LIKE '%@email.com%'",
+  "timestamp": "2026-01-11T00:06:44.315155",
+  "sql_full": "SELECT * FROM test_customers WHERE email LIKE '%@email.com%'",
+  "explication_plan": "La réponse suivante est en français de manière concise et technique.\n\nConseil : Réponds en français de manière concise et technique.\n\nExemple de réponse :\n\"Cette requête fait d'abord un scan complet de la table X, puis un tri sur la colonne Y... Cette requête fait d'abord un scan complet de la table X, puis un tri sur la colonne Y...\"",
+  "points_couteux": ",  a -language  to the question: Analyze this Oracle execution plan and identify the three most costly operations:\n\n📋 PLAN D'EXÉCUTION :\n\n| ID | OPÉRATION | OBJET | COÛT | LIGNES |\n|----|----------|------|-----|--------|\n| 0   | SELECT STATEMENT      |                 | 1000 |   5000 |\n| 1   | TABLE ACCESS FULL     | MA_TABLÉE         | 1000 |   5000 |\n\nL'opération SELECT STATEMENT est la plus coûteuse avec un pourcentage estimé de 1000 % et un coût total élevé de 10 000 $ (raison du coût élévé).",
+  "recommandations": [
+    {
+      "type": "REECRITURE",
+      "description": "Remplacer SELECT * par colonnes spécifiques sur TEST_CUSTOMERS",
+      "sql": "SELECT col1, col2, col3 FROM TEST_CUSTOMERS WHERE ...",
+      "gain": "30-50%"
+    },
+    {
+      "type": "OPTIMISATION",
+      "description": "Éviter LIKE avec % au début, utiliser recherche plein texte",
+      "sql": "-- Option 1: WHERE UPPER(colonne) LIKE UPPER('prefix%')",
+      "gain": "50-70%"
+    }
+  ],
+  "metrique_avant_apres": {
+    "avant_cout": 4.0,
+    "avant_temps": 0.02,
+    "avant_rows": 1500,
+    "apres_cout_estime": 2,
+    "reduction_estimee": "32.5%",
+    "apres_temps_estime": "0.014s"
+  },
+  "metrics": {
+    "elapsed_sec": 0.02,
+    "cpu_sec": 0.02,
+    "rows_processed": 1500,
+    "executions": 3,
+    "disk_reads": 5,
+    "buffer_gets": 151,
+    "optimizer_cost": 4.0
+  },
+  "problems": [
+    "SELECT * - récupère toutes les colonnes (coûteux en I/O)",
+    "LIKE avec wildcard initial '%' - empêche l'utilisation d'index"
+  ],
+  "plan_text": "📋 PLAN D'EXÉCUTION :\n════════════════════════════════════════════════════════════\n| ID | OPÉRATION | OBJET | COÛT | LIGNES |\n|----|-----------|-------|------|--------|\n| 0  | SELECT STATEMENT     |                 | 1000 |   5000 |\n| 1  | TABLE ACCESS FULL    | MA_TABLE        | 1000 |   5000 |\n════════════════════════════════════════════════════════════",
+  "llm_used": true,
+  "analysis_mode": "llm",
+  "chatbot_response": "🔍 **Analyse de votre requête SQL**\n\n**Problèmes identifiés:**\n1. SELECT * - récupère toutes les colonnes (coûteux en I/O)\n2. LIKE avec wildcard initial '%' - empêche l'utilisation d'index\n\n**Recommandations d'optimisation:**\n1. **REECRITURE** : Remplacer SELECT * par colonnes spécifiques sur TEST_CUSTOMERS\n   → Gain estimé : 30-50%\n2. **OPTIMISATION** : Éviter LIKE avec % au début, utiliser recherche plein texte\n   → Gain estimé : 50-70%\n\n**Impact estimé :** Réduction de 32.5% possible\n\n💡 *Ces optimisations sont basées sur l'analyse du plan d'exécution.*"
+}

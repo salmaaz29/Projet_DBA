@@ -1,0 +1,51 @@
+{
+  "sql_id": "DEMO_REAL_002",
+  "sql_query": "select /*+ rule */ bucket, endpoint, col#, epvalue, epvalue_raw, ep_repeat_count, endpoint_enc from histgrm$ where obj#=:1 and intcol#=:2 and row#=:3 order by bucket",
+  "timestamp": "2026-01-10T19:43:26.452862",
+  "sql_full": "select /*+ rule */ bucket, endpoint, col#, epvalue, epvalue_raw, ep_repeat_count, endpoint_enc from histgrm$ where obj#=:1 and intcol#=:2 and row#=:3 order by bucket",
+  "explication_plan": "La planification Oracle pour cet exemple de requête peut être présentée comme suit:\n\n1. Le premier opérateur SELECT est utilisé pour obtenir une liste complète des lignes de la table X. Il utilise les options de filtrage et de tri (SELECT STATEMENT) pour créer un plan d'exécution optimal pour chaque ligne de la table.\n\n2. L'opération TABLE AFFINE est utilisée pour accéder à chaque ligne de la table, puis le paramètre ROW# est utilisé pour obtenir une liste des lignes sélectionnées.\n\n3. Le deuxième opérateur SELECT est également utilisé pour obtenir une liste complète des lignes de la table X, mais cette fois-ci avec les options de filtrage et de tri (SELECT STATEMENT) désactivées. Il utilise les options de planification (PLAN D'EXÉCUTION) pour créer un plan d'exécution optimal pour chaque ligne de la table.\n\n4. L'opération TABLE AFFINE est utilisée pour accéder à chaque ligne de la table, puis le paramètre ROW# est utilisé pour obtenir une liste des lignes sélectionnées.\n\n5. Le troisième opérateur SELECT est utilisé pour obtenir une liste complète des lignes de la table X, mais cette fois-ci avec les options de filtrage et de tri (SELECT STATEMENT) activées. Il utilise les options de planification (PLAN D'EXÉCUTION) pour créer un plan d'exécution optimal pour",
+  "points_couteux": "Le plan d'exécution suivant est utilisé dans un système de support de décision (DS), et les trois opérations les plus coûteuses sont analysées pour identifier les points les plus coûteux. Le premier point est le SELECT STATEMENT, qui consiste à effectuer une recherche sur un tableau de types numériques. Le deuxième opération est le TABLE ACCESS FULL, qui utilise la table DUAL pour récupérer des données. Les trois opérations sont les suivantes :\n\n1. Opération nommée : SELECT STATEMENT (coût total estimé = 150)\n2. Pourcentage de coût total : 150/3650 = 0,4%\n3. Raison du coût élévé : le coût total est supérieur à la valeur minimale autorisée (3650) pour une opération SELECT STATEMENT. L'opération TABLE ACCESS FULL a été lancée avec un nombre de points d'entrée (100) et une taille de tableau (100), ce qui est supérieur à la valeur minimale autorisée (50).",
+  "recommandations": [
+    {
+      "type": "LLM_SUGGESTION",
+      "description": "Une optimisation avec index :",
+      "sql": "",
+      "gain": "Variable"
+    },
+    {
+      "type": "LLM_SUGGESTION",
+      "description": "Description technique : pour cet optimisme, nous allons utiliser une index sur le champ \"epvalue_raw\" qui contient les valeurs de l'entreprise à partir desquelles on a calculé les valeurs de la colonne \"endpoint\".",
+      "sql": "",
+      "gain": "Variable"
+    },
+    {
+      "type": "LLM_SUGGESTION",
+      "description": "Commande SQL exacte à exécuter :",
+      "sql": "SELECT /*+ rule */ bucket, endpoint, col#, epvalue, epvalue_raw, ep_repea...",
+      "gain": "Variable"
+    }
+  ],
+  "metrique_avant_apres": {
+    "avant_cout": 1.0,
+    "avant_temps": 0.83,
+    "avant_rows": 175084,
+    "apres_cout_estime": 1,
+    "reduction_estimee": "35.0%",
+    "apres_temps_estime": 0.5395
+  },
+  "metrics": {
+    "elapsed_sec": 0.83,
+    "rows_processed": 175084,
+    "executions": 10804,
+    "disk_reads": 0,
+    "buffer_gets": 30705,
+    "optimizer_cost": 1.0
+  },
+  "problems": [
+    "FULL TABLE SCAN détecté"
+  ],
+  "plan_text": "| Id | Operation | Object | Cost | Rows |\n|----|-----------|--------|------|------|\n| 0 | SELECT STATEMENT | None | 150 | 100 |\n| 1 | TABLE ACCESS FULL | DUAL | 150 | 100 |",
+  "llm_used": true,
+  "analysis_mode": "llm",
+  "chatbot_response": "🔍 **Analyse de votre requête SQL**\n\n**Problèmes identifiés:**\n1. FULL TABLE SCAN détecté\n\n**Recommandations d'optimisation:**\n1. **LLM_SUGGESTION**: Une optimisation avec index :\n   Gain estimé: Variable\n2. **LLM_SUGGESTION**: Description technique : pour cet optimisme, nous allons utiliser une index sur le champ \"epvalue_raw\" qui contient les valeurs de l'entreprise à partir desquelles on a calculé les valeurs de la colonne \"endpoint\".\n   Gain estimé: Variable\n\n**Impact estimé:** Réduction de 35.0% possible\n\n💡 *Ces optimisations sont basées sur l'analyse du plan d'exécution.*"
+}

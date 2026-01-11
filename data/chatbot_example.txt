@@ -1,0 +1,20 @@
+Question: Pourquoi ma requête SELECT COUNT(*) FROM test_orders est lente ?
+
+Réponse:
+🔍 **Analyse de votre requête SQL**
+
+**Problèmes identifiés:**
+1. COUNT(*) sur table TEST_ORDERS avec filtre WHERE - potentiel full scan
+2. Littéral DATE '...' - pourrait causer des problèmes de conversion
+3. Coût optimiseur élevé (3688.0) - requête très lourde
+
+**Recommandations d'optimisation:**
+1. **LLM_SUGGESTION** : Une optimisation avec index
+2. **LLM_SUGGESTION** : Une optimisation avec hint ou réécriture SQL, selon les besoins du système.
+   → Gain estimé : 36%
+3. **INDEX** : Créer un index sur la colonne filtrée de TEST_ORDERS
+   → Gain estimé : 60-80%
+
+**Impact estimé :** Réduction de 65.0% possible
+
+💡 *Ces optimisations sont basées sur l'analyse du plan d'exécution.*

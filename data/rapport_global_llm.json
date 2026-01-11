@@ -1,0 +1,75 @@
+{
+  "timestamp": "2026-01-11T00:06:44.315155",
+  "total_queries_loaded": 7,
+  "queries_analyzed": 7,
+  "llm_used": true,
+  "llm_percentage": 100.0,
+  "average_reduction": 35.0,
+  "queries_success": [
+    "94zscq44026u9",
+    "153t7dv350rcp",
+    "02k9vjbvys403",
+    "6006xdca70npt",
+    "6hh616ujabbsc",
+    "465fchakhm6ua",
+    "2920qmcqtcwn6"
+  ],
+  "summary": [
+    {
+      "sql_id": "94zscq44026u9",
+      "reduction": "65.0%",
+      "recommendations": 3,
+      "llm": true,
+      "cost": 3688.0,
+      "time": 0.191
+    },
+    {
+      "sql_id": "153t7dv350rcp",
+      "reduction": "10.0%",
+      "recommendations": 2,
+      "llm": true,
+      "cost": 24.0,
+      "time": 0.051
+    },
+    {
+      "sql_id": "02k9vjbvys403",
+      "reduction": "47.5%",
+      "recommendations": 3,
+      "llm": true,
+      "cost": 20.0,
+      "time": 0.043
+    },
+    {
+      "sql_id": "6006xdca70npt",
+      "reduction": "47.5%",
+      "recommendations": 3,
+      "llm": true,
+      "cost": 20.0,
+      "time": 0.035
+    },
+    {
+      "sql_id": "6hh616ujabbsc",
+      "reduction": "32.5%",
+      "recommendations": 2,
+      "llm": true,
+      "cost": 4.0,
+      "time": 0.03
+    },
+    {
+      "sql_id": "465fchakhm6ua",
+      "reduction": "10.0%",
+      "recommendations": 3,
+      "llm": true,
+      "cost": 21.0,
+      "time": 0.027
+    },
+    {
+      "sql_id": "2920qmcqtcwn6",
+      "reduction": "32.5%",
+      "recommendations": 2,
+      "llm": true,
+      "cost": 4.0,
+      "time": 0.02
+    }
+  ]
+}

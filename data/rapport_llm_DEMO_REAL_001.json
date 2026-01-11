@@ -1,0 +1,53 @@
+{
+  "sql_id": "DEMO_REAL_001",
+  "sql_query": "SELECT \n                        ROUND(SUM(bytes)/1024/1024/1024, 2) as db_size_gb,\n                        COUNT(DISTINCT tablespace_name) as tablespace_count\n                    FROM dba_segments",
+  "timestamp": "2026-01-10T19:42:42.501335",
+  "sql_full": "SELECT \n                        ROUND(SUM(bytes)/1024/1024/1024, 2) as db_size_gb,\n                        COUNT(DISTINCT tablespace_name) as tablespace_count\n                    FROM dba_segments",
+  "explication_plan": "Sure! Here is an example response in French for a simple and concise technical explanation of the execution plan for a SELECT statement with a full table scan and two full table scans, as shown in the following plan:\n\nPlan hash value: 2512933241\n\nQuestion: Explain this plan in terms of simple and concise French.\n\nPLAN D'EXECUTION:\n| Id | Operation | Object | Cost | Rows |\n|----|----------|--------|------|------|\n| 0 | SELECT STATEMENT | None | 150 | 100 |\n| 1 | TABLE ACCESS FULL | DUAL | 150 | 100 |\n\nREQUÊTE:\nS'il vous plaît, expliquez ce plan en utilisant des phrases simple et concises pour un administrateur système.\n\nExemple de réponse:\n\"Cette requête fait d'abord un scan complet de la table X, puis un tri sur la colonne Y...",
+  "points_couteux": "L'exécution plan Oracle suivant est un plan d'exécution de deux table scans, qui sont référencés dans la table \"TABLE_SCAN\" et les opérations suivantes sont effectuées sur ces tables. Le premier table scan est effectué sur la table \"TABLE1\", avec 100 rows, et le second table scan est effectué sur la table \"TABLE2\", avec 100 rows. Les deux table scans ont été exécutés avec une moyenne de 150 opérations par seconde, ce qui implique que les opérations sont effectuées à l'échelle de la machine virtuelle ou de la base de données.\n\nLes 3 opérations les plus coûteuses sont les suivantes :\n\n1. SELECT STATEMENT (ID = 0) - la seule opération qui a été exécutée sur cette table est le SELECT STATEMENT, avec une moyenne de 150 opérations par seconde.\n\n2. TABLE ACCESS FULL (ID = 1) - cette opération a été effectuée sur la base de données Oracle et a référencé les 100 rows de la table \"TABLE_SCAN\". La raison du coût élevé est que cette opération a référencé les 100 rows de la table \"TABLE",
+  "recommandations": [
+    {
+      "type": "LLM_SUGGESTION",
+      "description": "Une optimisation avec index - L'index (INFORMATION_SCHEMA.TABLES) peut être utilisé pour filtrer les résultats selon le nom des tables. La requête SQL exacte à exécuter serait ainsi :",
+      "sql": "SELECT",
+      "gain": "WHERE INFORMATION_SCHEMA.TABLES LIKE '%'"
+    },
+    {
+      "type": "LLM_SUGGESTION",
+      "description": "Une optimisation avec hint ou réécriture SQL - Si vous souhaitez que l'optimiseur Oracle exécute le même script SQL pour tous les résultats, vous pouvez utiliser un hint (HINT) ou une réécriture SQL (`REWRITE`) pour cela. L'hint est utilisé pour définir le type de requête à utiliser et la réécriture permet de mettre en cache les résultats d'une requête pour plus de performances ultérieures.",
+      "sql": "",
+      "gain": "Variable"
+    },
+    {
+      "type": "INDEX",
+      "description": "Créer un index sur la table DBA_SEGMENTS",
+      "sql": "CREATE INDEX idx_dba_segments_col ON DBA_SEGMENTS(colonne_where);",
+      "gain": "60-80%"
+    }
+  ],
+  "metrique_avant_apres": {
+    "avant_cout": 2166.0,
+    "avant_temps": 0.75,
+    "avant_rows": 3,
+    "apres_cout_estime": 1169,
+    "reduction_estimee": "46.0%",
+    "apres_temps_estime": 0.405
+  },
+  "metrics": {
+    "elapsed_sec": 0.75,
+    "rows_processed": 3,
+    "executions": 3,
+    "disk_reads": 30,
+    "buffer_gets": 44101,
+    "optimizer_cost": 2166.0
+  },
+  "problems": [
+    "Pas de clause WHERE (risque de full scan)",
+    "FULL TABLE SCAN détecté",
+    "Coût optimiseur élevé (2166.0)"
+  ],
+  "plan_text": "| Id | Operation | Object | Cost | Rows |\n|----|-----------|--------|------|------|\n| 0 | SELECT STATEMENT | None | 150 | 100 |\n| 1 | TABLE ACCESS FULL | DUAL | 150 | 100 |",
+  "llm_used": true,
+  "analysis_mode": "llm",
+  "chatbot_response": "🔍 **Analyse de votre requête SQL**\n\n**Problèmes identifiés:**\n1. Pas de clause WHERE (risque de full scan)\n2. FULL TABLE SCAN détecté\n3. Coût optimiseur élevé (2166.0)\n\n**Recommandations d'optimisation:**\n1. **LLM_SUGGESTION**: Une optimisation avec index - L'index (INFORMATION_SCHEMA.TABLES) peut être utilisé pour filtrer les résultats selon le nom des tables. La requête SQL exacte à exécuter serait ainsi :\n   Gain estimé: WHERE INFORMATION_SCHEMA.TABLES LIKE '%'\n2. **LLM_SUGGESTION**: Une optimisation avec hint ou réécriture SQL - Si vous souhaitez que l'optimiseur Oracle exécute le même script SQL pour tous les résultats, vous pouvez utiliser un hint (HINT) ou une réécriture SQL (`REWRITE`) pour cela. L'hint est utilisé pour définir le type de requête à utiliser et la réécriture permet de mettre en cache les résultats d'une requête pour plus de performances ultérieures.\n   Gain estimé: Variable\n\n**Impact estimé:** Réduction de 46.0% possible\n\n💡 *Ces optimisations sont basées sur l'analyse du plan d'exécution.*"
+}

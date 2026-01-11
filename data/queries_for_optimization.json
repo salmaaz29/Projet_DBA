@@ -1,0 +1,263 @@
+[
+  {
+    "sql_id": "SIM001",
+    "sql_text": "SELECT * FROM orders WHERE order_date > '2023-01-01'",
+    "sql_fulltext": "SELECT * FROM orders WHERE order_date > '2023-01-01' ORDER BY order_date DESC",
+    "parsing_schema": "APP_USER",
+    "basic_metrics": {
+      "elapsed_sec": 45.2,
+      "cpu_sec": 12.3,
+      "rows_processed": 1500000,
+      "executions": 5,
+      "disk_reads": 12000,
+      "buffer_gets": 45000,
+      "optimizer_cost": 5000
+    },
+    "execution_plan": [
+      {
+        "id": 0,
+        "operation": "SELECT STATEMENT",
+        "options": "",
+        "object_name": null,
+        "object_type": null,
+        "cost": 5000,
+        "cardinality": 1500000,
+        "bytes": 45000000,
+        "cpu_cost": 123456,
+        "io_cost": 12000,
+        "time": 45200
+      },
+      {
+        "id": 1,
+        "operation": "TABLE ACCESS",
+        "options": "FULL",
+        "object_name": "ORDERS",
+        "object_type": "TABLE",
+        "cost": 5000,
+        "cardinality": 1500000,
+        "bytes": 45000000,
+        "cpu_cost": 123456,
+        "io_cost": 12000,
+        "time": 45200
+      }
+    ],
+    "objects_involved": [
+      {
+        "object_owner": "APP_USER",
+        "object_name": "ORDERS",
+        "object_type": "TABLE"
+      }
+    ],
+    "existing_indexes": [
+      {
+        "table": "ORDERS",
+        "indexes": [
+          {
+            "index_name": "ORDERS_PK",
+            "column_name": "ORDER_ID",
+            "column_position": 1,
+            "uniqueness": "UNIQUE"
+          }
+        ]
+      }
+    ],
+    "optimizer_info": {
+      "mode": "ALL_ROWS",
+      "plan_hash": 123456789
+    }
+  },
+  {
+    "sql_id": "SIM002",
+    "sql_text": "SELECT c.*, o.* FROM customers c JOIN orders o ON c.id = o.customer_id",
+    "sql_fulltext": "SELECT c.customer_name, c.email, o.order_date, o.total_amount FROM customers c JOIN orders o ON c.id = o.customer_id WHERE o.status = 'COMPLETED'",
+    "parsing_schema": "APP_USER",
+    "basic_metrics": {
+      "elapsed_sec": 38.7,
+      "cpu_sec": 8.9,
+      "rows_processed": 850000,
+      "executions": 12,
+      "disk_reads": 8500,
+      "buffer_gets": 52000,
+      "optimizer_cost": 4200
+    },
+    "execution_plan": [
+      {
+        "id": 0,
+        "operation": "SELECT STATEMENT",
+        "options": "",
+        "object_name": null,
+        "object_type": null,
+        "cost": 4200,
+        "cardinality": 850000,
+        "bytes": 68000000,
+        "cpu_cost": 89000,
+        "io_cost": 8500,
+        "time": 38700
+      },
+      {
+        "id": 1,
+        "operation": "HASH JOIN",
+        "options": "",
+        "object_name": null,
+        "object_type": null,
+        "cost": 4200,
+        "cardinality": 850000,
+        "bytes": 68000000,
+        "cpu_cost": 89000,
+        "io_cost": 8500,
+        "time": 38700
+      },
+      {
+        "id": 2,
+        "operation": "TABLE ACCESS",
+        "options": "FULL",
+        "object_name": "CUSTOMERS",
+        "object_type": "TABLE",
+        "cost": 1500,
+        "cardinality": 100000,
+        "bytes": 5000000,
+        "cpu_cost": 30000,
+        "io_cost": 2000,
+        "time": 15000
+      },
+      {
+        "id": 3,
+        "operation": "TABLE ACCESS",
+        "options": "FULL",
+        "object_name": "ORDERS",
+        "object_type": "TABLE",
+        "cost": 2700,
+        "cardinality": 1500000,
+        "bytes": 63000000,
+        "cpu_cost": 59000,
+        "io_cost": 6500,
+        "time": 23700
+      }
+    ],
+    "objects_involved": [
+      {
+        "object_owner": "APP_USER",
+        "object_name": "CUSTOMERS",
+        "object_type": "TABLE"
+      },
+      {
+        "object_owner": "APP_USER",
+        "object_name": "ORDERS",
+        "object_type": "TABLE"
+      }
+    ],
+    "existing_indexes": [
+      {
+        "table": "CUSTOMERS",
+        "indexes": [
+          {
+            "index_name": "CUSTOMERS_PK",
+            "column_name": "ID",
+            "column_position": 1,
+            "uniqueness": "UNIQUE"
+          },
+          {
+            "index_name": "CUSTOMERS_EMAIL_IDX",
+            "column_name": "EMAIL",
+            "column_position": 1,
+            "uniqueness": "NONUNIQUE"
+          }
+        ]
+      },
+      {
+        "table": "ORDERS",
+        "indexes": [
+          {
+            "index_name": "ORDERS_PK",
+            "column_name": "ORDER_ID",
+            "column_position": 1,
+            "uniqueness": "UNIQUE"
+          },
+          {
+            "index_name": "ORDERS_CUSTOMER_IDX",
+            "column_name": "CUSTOMER_ID",
+            "column_position": 1,
+            "uniqueness": "NONUNIQUE"
+          }
+        ]
+      }
+    ],
+    "optimizer_info": {
+      "mode": "ALL_ROWS",
+      "plan_hash": 987654321
+    }
+  },
+  {
+    "sql_id": "SIM003",
+    "sql_text": "SELECT * FROM employees WHERE department_id = 10 AND salary > 50000",
+    "sql_fulltext": "SELECT emp_id, first_name, last_name, salary FROM employees WHERE department_id = 10 AND salary > 50000 ORDER BY salary DESC",
+    "parsing_schema": "HR_USER",
+    "basic_metrics": {
+      "elapsed_sec": 25.4,
+      "cpu_sec": 6.2,
+      "rows_processed": 45000,
+      "executions": 8,
+      "disk_reads": 6000,
+      "buffer_gets": 28000,
+      "optimizer_cost": 1800
+    },
+    "execution_plan": [
+      {
+        "id": 0,
+        "operation": "SELECT STATEMENT",
+        "options": "",
+        "object_name": null,
+        "object_type": null,
+        "cost": 1800,
+        "cardinality": 45000,
+        "bytes": 3600000,
+        "cpu_cost": 62000,
+        "io_cost": 6000,
+        "time": 25400
+      },
+      {
+        "id": 1,
+        "operation": "TABLE ACCESS",
+        "options": "FULL",
+        "object_name": "EMPLOYEES",
+        "object_type": "TABLE",
+        "cost": 1800,
+        "cardinality": 45000,
+        "bytes": 3600000,
+        "cpu_cost": 62000,
+        "io_cost": 6000,
+        "time": 25400
+      }
+    ],
+    "objects_involved": [
+      {
+        "object_owner": "HR_USER",
+        "object_name": "EMPLOYEES",
+        "object_type": "TABLE"
+      }
+    ],
+    "existing_indexes": [
+      {
+        "table": "EMPLOYEES",
+        "indexes": [
+          {
+            "index_name": "EMP_PK",
+            "column_name": "EMP_ID",
+            "column_position": 1,
+            "uniqueness": "UNIQUE"
+          },
+          {
+            "index_name": "EMP_DEPT_IDX",
+            "column_name": "DEPARTMENT_ID",
+            "column_position": 1,
+            "uniqueness": "NONUNIQUE"
+          }
+        ]
+      }
+    ],
+    "optimizer_info": {
+      "mode": "ALL_ROWS",
+      "plan_hash": 456789123
+    }
+  }
+]

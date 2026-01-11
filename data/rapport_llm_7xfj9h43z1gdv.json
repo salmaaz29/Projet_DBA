@@ -1,0 +1,49 @@
+{
+  "sql_id": "7xfj9h43z1gdv",
+  "sql_query": "SELECT /*+ NO_INDEX(test_customers) NO_INDEX(test_orders) */ COUNT(*) FROM TEST_CUSTOMERS C JOIN TEST_ORDERS O ON C.ID = O.CUSTOMER_ID WHERE O.STATUS = 'COMPLETED'",
+  "timestamp": "2026-01-10T20:23:12.879697",
+  "sql_full": "SELECT /*+ NO_INDEX(test_customers) NO_INDEX(test_orders) */ COUNT(*) FROM TEST_CUSTOMERS C JOIN TEST_ORDERS O ON C.ID = O.CUSTOMER_ID WHERE O.STATUS = 'COMPLETED'",
+  "explication_plan": "Sure, let me provide a more detailed explanation of the plan execution for the given query.\n\nThe first step is to select the necessary columns from the `TEST_CUSTOMERS` and `TEST_ORDERS` tables using the `SELECT STATEMENT` operation. The `NO_INDEX(test_customer)` and `NO_INDEX(test_orders)` clauses are used to avoid the use of index-based queries, which can significantly improve query performance in large datasets.\n\nNext, the query is joined on the `CUSTOMER_ID` column from both tables using the `JOIN` operation. The `WHERE` condition is also added to filter out any records that don't meet the specified status (`COMPLETED`), ensuring only complete orders are returned.\n\nFinally, a count aggregate function is applied to the resulting table, which returns the number of completed orders per customer. This is achieved using the `COUNT(*) FROM` operation and the `NO_INDEX(test_orders)` clause. The `WHERE` condition is also included in this step to ensure only complete orders are counted.\n\nOverall, the plan execution for this query involves a scan on the `TEST_CUSTOMERS` table followed by a quick join and count aggregate operation on the `TEST_ORDERS` table.",
+  "points_couteux": "La réponse à cette question est la suivante:\n\nLe plan d'exécution Oracle suivant est présenté ci-dessous, et il inclut trois opérations les plus coûteuses :\n\n1. SELECT STATEMENT - Cette opération a un coût total estimé de 100%, avec une raison du coût élévée de 30%.\n\n2. Object - L'opération SELECT a été exécutée sur une table, donc le nombre de lignes est égal à 1.\n\n3. Row - La fonction COUNT() a été utilisée pour récupérer les valeurs des colonnes \"department_id\" et \"salary\", qui ont un coût total estimé de 100% et une raison du coût élévée de 25%.\n\nLe tableau numérotée suivant liste les opérations les plus coûteuses avec leurs coûts estimés et raisons d'élévation:\n\n| Opération | Coût estimé | Raison du coût élévé |\n|-----------|-------------|---------------------|\n| SELECT STATEMENT | 100% | 30% (coût de la table) |\n| Object | 1 ligne | 1 ligne |\n| Row | 1 ligne | 1 ligne |",
+  "recommandations": [
+    {
+      "type": "LLM_SUGGESTION",
+      "description": "Une optimisation avec index : Le plan actuel utilise une requête sur les indices, ce qui permet de réduire le nombre de requêtes à exécuter pour trouver les données recherchées. L'exemple suivant montre comment cela peut être réalisé:",
+      "sql": "SELECT /*+ NO_INDEX(test_customer) NO_INDEX(test_orders) */ COUNT(*) FROM TEST_CUSTOMERS C JOIN TEST_ORDERS O ON C.ID = O.CUSTOMER_ID WHERE O.STATUS = 'COMPLETED'",
+      "gain": "Plan Actuel (gain estimé en pourcentage): 90%"
+    },
+    {
+      "type": "LLM_SUGGESTION",
+      "description": "Une optimisation avec hint ou réécriture SQL : Le plan actuel utilise également les hints et la syntaxe de réécriture SQL pour améliorer le temps d'exécution. L'exemple suivant montre comment cela peut être réalisé:",
+      "sql": "SELECT /*+ NO_INDEX(test_customer) NO_INDEX(test_orders) */ COUNT(*) FROM TEST_CUSTOMERS C JOIN TEST_ORDERS O ON C.",
+      "gain": "Variable"
+    },
+    {
+      "type": "STATISTIQUES",
+      "description": "Mettre à jour les statistiques",
+      "sql": "EXEC DBMS_STATS.GATHER_TABLE_STATS(NULL, 'TABLE');",
+      "gain": "10-30%"
+    }
+  ],
+  "metrique_avant_apres": {
+    "avant_cout": 10,
+    "avant_temps": 0.05,
+    "avant_rows": 5,
+    "apres_cout_estime": 9,
+    "reduction_estimee": "10.0%",
+    "apres_temps_estime": 0.045000000000000005
+  },
+  "metrics": {
+    "elapsed_sec": 0.05,
+    "rows_processed": 5,
+    "executions": 5,
+    "disk_reads": 0,
+    "buffer_gets": 3725,
+    "optimizer_cost": 10
+  },
+  "problems": [],
+  "plan_text": "| Id | Operation | Object | Cost | Rows |\n|----|-----------|--------|------|------|\n| 0 | SELECT STATEMENT | None | 100 | 1 |",
+  "llm_used": true,
+  "analysis_mode": "llm",
+  "chatbot_response": "🔍 **Analyse de votre requête SQL**\n\n**Recommandations d'optimisation:**\n1. **LLM_SUGGESTION**: Une optimisation avec index : Le plan actuel utilise une requête sur les indices, ce qui permet de réduire le nombre de requêtes à exécuter pour trouver les données recherchées. L'exemple suivant montre comment cela peut être réalisé:\n   Gain estimé: Plan Actuel (gain estimé en pourcentage): 90%\n2. **LLM_SUGGESTION**: Une optimisation avec hint ou réécriture SQL : Le plan actuel utilise également les hints et la syntaxe de réécriture SQL pour améliorer le temps d'exécution. L'exemple suivant montre comment cela peut être réalisé:\n   Gain estimé: Variable\n\n**Impact estimé:** Réduction de 10.0% possible\n\n💡 *Ces optimisations sont basées sur l'analyse du plan d'exécution.*"
+}

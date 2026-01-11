@@ -1,0 +1,51 @@
+{
+  "sql_id": "fg4skgcja2cyj",
+  "sql_query": "SELECT EXTRACTVALUE(VALUE(D), '/row/@op'), EXTRACTVALUE(VALUE(D), '/row/@dis'), EXTRACTVALUE(VALUE(D), '/row/@par'), EXTRACTVALUE(VALUE(D), '/row/@prt'), EXTRACTVALUE(VALUE(D), '/row/@dep'), EXTRACTVALUE(VALUE(D), '/row/@skp') FROM TABLE(XMLSEQUENCE(EXTRACT(XMLTYPE(:B1 ), '/*/display_map/row'))) D",
+  "timestamp": "2026-01-10T20:22:24.590919",
+  "sql_full": "SELECT EXTRACTVALUE(VALUE(D), '/row/@op'), EXTRACTVALUE(VALUE(D), '/row/@dis'), EXTRACTVALUE(VALUE(D), '/row/@par'), EXTRACTVALUE(VALUE(D), '/row/@prt'), EXTRACTVALUE(VALUE(D), '/row/@dep'), EXTRACTVALUE(VALUE(D), '/row/@skp') FROM TABLE(XMLSEQUENCE(EXTRACT(XMLTYPE(:B1 ), '/*/display_map/row'))) D",
+  "explication_plan": "Le plan d'exécution pour l'objet SELECT STATEMENT est le suivant:\n\n| Id | Operation | Object | Cost | Rows |\n|----|----------|-------|------|------|\n| 0 | SELECT STATEMENT | None | 100 | 1 |\n\nLe plan d'exécution pour l'objet SELECT EXTRACTVALUE(VALUE(D), '/row/@op') est le suivant:\n\n| Id | Operation | Object | Cost | Rows |\n|----|----------|-------|------|------|\n| 1 | SELECT EXTRACTVALUE(VALUE(D), '/row/@op') | None | 20 | 1 |\n\nLe plan d'exécution pour l'objet SELECT EXTRACTVALUE(VALUE(D), '/row/@dis') est le suivant:\n\n| Id | Operation | Object | Cost | Rows |\n|----|----------|-------|------|------|\n| 2 | SELECT EXTRACTVALUE(VALUE(D), '/row/@dis') | None | 10 | 1 |\n\nLe plan d'exécution pour l'objet SELECT EXTRACTVALUE(VALUE(D), '/row/@par') est le suivant:\n\n| Id | Operation | Object | Cost | Rows |\n|----|----------|-------|------|------|\n| 3 | SELECT EXTRACTVALUE(VALUE(D), '/row/@par') | None | 10 | 1 |\n\nLe plan d'exécution pour l'ob",
+  "points_couteux": "En français, la réponse à cette question peut être ainsi formulée:\n\n1. L'opération \"SELECT STATEMENT\" est coûteuse avec un pourcentage estimé de 100%, et le raisonnement du coût élevé est d'une opération \"PLAN HASH VALUE\" qui utilise deux tables, ainsi que des opérations \"ALTER TABLE\" et \"GRUPE BY\".\n\n2. Le nombre de rows référencés par les 3 opérations est 1, ce qui n'est pas coûteux.\n\n3. L'opération \"SELECT PLAN_TABLCE_OUTPUT\" est le plus coûtueuse avec un pourcentage estimé de 50%, et le raisonnement du coût élevé est d'une opération \"GRUPE BY\" qui utilise deux tables, ainsi que des opérations \"ALTER TABLE\" et \"PLAN HASH VALUE\".\n\nEn résumé, les 3 opérations les plus coûteuses sont les suivantes:\n1. SELECT STATEMENT (opération PLAN_TABLCE_OUTPUT avec pourcentage estimé de 50%)\n2. SELECT PLAN_TABLCE_OUTPUT (opération GRUPE BY avec pourcentage estimé de 5",
+  "recommandations": [
+    {
+      "type": "LLM_SUGGESTION",
+      "description": "Index:",
+      "sql": "",
+      "gain": "Variable"
+    },
+    {
+      "type": "LLM_SUGGESTION",
+      "description": "Hint/rewriting SQL:",
+      "sql": "| 0| SELECT EXTRACTVALUE(VALUE(D), '/row/@op'), EXTRACTVALUE(VALUE(D), '/row/@dis'), | 1| SELECT EXTRACTVALUE(VALUE(D), '/row/@par'), | 2| SELECT EXTRACTVALUE(VALUE(D), '/row/@prt'), | 3| SELECT EXTRACTVALUE(VALUE(D), '/row/@dep'), | 4| SELECT EXTRACTVALUE(VALUE(D), '/row/@skp') FROM     TABLE",
+      "gain": "Variable"
+    },
+    {
+      "type": "STATISTIQUES",
+      "description": "Mettre à jour les statistiques",
+      "sql": "EXEC DBMS_STATS.GATHER_TABLE_STATS(NULL, 'TABLE');",
+      "gain": "10-30%"
+    }
+  ],
+  "metrique_avant_apres": {
+    "avant_cout": 10,
+    "avant_temps": 0.06,
+    "avant_rows": 8,
+    "apres_cout_estime": 8,
+    "reduction_estimee": "19.5%",
+    "apres_temps_estime": 0.048299999999999996
+  },
+  "metrics": {
+    "elapsed_sec": 0.06,
+    "rows_processed": 8,
+    "executions": 2,
+    "disk_reads": 0,
+    "buffer_gets": 856,
+    "optimizer_cost": 10
+  },
+  "problems": [
+    "Pas de clause WHERE (risque de full scan)"
+  ],
+  "plan_text": "| Id | Operation | Object | Cost | Rows |\n|----|-----------|--------|------|------|\n| 0 | SELECT STATEMENT | None | 100 | 1 |",
+  "llm_used": true,
+  "analysis_mode": "llm",
+  "chatbot_response": "🔍 **Analyse de votre requête SQL**\n\n**Problèmes identifiés:**\n1. Pas de clause WHERE (risque de full scan)\n\n**Recommandations d'optimisation:**\n1. **LLM_SUGGESTION**: Index:\n   Gain estimé: Variable\n2. **LLM_SUGGESTION**: Hint/rewriting SQL:\n   Gain estimé: Variable\n\n**Impact estimé:** Réduction de 19.5% possible\n\n💡 *Ces optimisations sont basées sur l'analyse du plan d'exécution.*"
+}

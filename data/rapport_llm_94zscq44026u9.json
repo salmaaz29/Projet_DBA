@@ -1,0 +1,55 @@
+{
+  "sql_id": "94zscq44026u9",
+  "sql_query": "SELECT COUNT(*)\nFROM test_orders o, test_customers c\nWHERE o.order_date > DATE '2023-01-01'",
+  "timestamp": "2026-01-11T00:02:41.615651",
+  "sql_full": "SELECT COUNT(*)\nFROM test_orders o, test_customers c\nWHERE o.order_date > DATE '2023-01-01'",
+  "explication_plan": "Pour une requête de lecture complète d'une table (X), l'exécution de l'opération SELECT COUNT(*) FROM test_orders o, test_customer c WHERE o.order_date > DATE '2023-01-01' aura lieu dans le mode de scans complet de la table X pour le premier tri sur la colonne Y (dans la ligne 1).\n\nPour une requête de tri simple sur la colonne Y, l'exécution sera similaire à celle d'une requête de lecture complète d'une table. L'opération SELECT COUNT(*) FROM test_orders o, test_customer c WHERE o.order_date > DATE '2023-01-01' aura lieu dans le mode de tri simple de la ligne 2.",
+  "points_couteux": ",  an  to your question:\n\nQuestion: Analyze this Oracle execution plan and identify the three most costly operations with estimated costs totaling 10,000 lines and a percentage increase of 5%. Answer:\n\n📋 PLAN D'EXÉCUTION :\n\n| ID | OPÉRATION | OBJET | COÛT | LIGNES |\n|----|----------|------|-----|--------|\n| 0   | SELECT STATEMENT      |                 | 1000 |   5000 |\n| 1   | TABLE ACCESS FULL     | MA_TABLINE | 1000 |   5000 |\n\nList of operations with estimated costs totaling 10,000 lines and a percentage increase of 5%:\n\n1. Table access full (MA_",
+  "recommandations": [
+    {
+      "type": "LLM_SUGGESTION",
+      "description": "Une optimisation avec index",
+      "sql": "",
+      "gain": "Variable"
+    },
+    {
+      "type": "LLM_SUGGESTION",
+      "description": "Une optimisation avec hint ou réécriture SQL, selon les besoins du système.",
+      "sql": "",
+      "gain": "36%"
+    },
+    {
+      "type": "INDEX",
+      "description": "Créer un index sur la colonne filtrée de TEST_ORDERS",
+      "sql": "CREATE INDEX idx_test_orders_filtered ON TEST_ORDERS(colonne_where);",
+      "gain": "60-80%"
+    }
+  ],
+  "metrique_avant_apres": {
+    "avant_cout": 3688.0,
+    "avant_temps": 0.191,
+    "avant_rows": 1,
+    "apres_cout_estime": 1290,
+    "reduction_estimee": "65.0%",
+    "apres_temps_estime": "0.067s"
+  },
+  "metrics": {
+    "elapsed_sec": 0.191,
+    "cpu_sec": 0.189,
+    "rows_processed": 1,
+    "executions": 1,
+    "disk_reads": 27,
+    "buffer_gets": 39,
+    "optimizer_cost": 3688.0
+  },
+  "problems": [
+    "COUNT(*) sur table TEST_ORDERS avec filtre WHERE - potentiel full scan",
+    "Littéral DATE '...' - pourrait causer des problèmes de conversion",
+    "Coût optimiseur élevé (3688.0) - requête très lourde",
+    "Temps d'exécution élevé (0.191s) - impact performance"
+  ],
+  "plan_text": "📋 PLAN D'EXÉCUTION :\n════════════════════════════════════════════════════════════\n| ID | OPÉRATION | OBJET | COÛT | LIGNES |\n|----|-----------|-------|------|--------|\n| 0  | SELECT STATEMENT     |                 | 1000 |   5000 |\n| 1  | TABLE ACCESS FULL    | MA_TABLE        | 1000 |   5000 |\n════════════════════════════════════════════════════════════",
+  "llm_used": true,
+  "analysis_mode": "llm",
+  "chatbot_response": "🔍 **Analyse de votre requête SQL**\n\n**Problèmes identifiés:**\n1. COUNT(*) sur table TEST_ORDERS avec filtre WHERE - potentiel full scan\n2. Littéral DATE '...' - pourrait causer des problèmes de conversion\n3. Coût optimiseur élevé (3688.0) - requête très lourde\n\n**Recommandations d'optimisation:**\n1. **LLM_SUGGESTION** : Une optimisation avec index\n2. **LLM_SUGGESTION** : Une optimisation avec hint ou réécriture SQL, selon les besoins du système.\n   → Gain estimé : 36%\n3. **INDEX** : Créer un index sur la colonne filtrée de TEST_ORDERS\n   → Gain estimé : 60-80%\n\n**Impact estimé :** Réduction de 65.0% possible\n\n💡 *Ces optimisations sont basées sur l'analyse du plan d'exécution.*"
+}

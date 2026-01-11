@@ -1,0 +1,42 @@
+{
+  "sql_id": "SIM003",
+  "sql_query": "SELECT * FROM employees WHERE department_id = 10 AND salary > 50000",
+  "timestamp": "2026-01-11T15:42:50.829583",
+  "sql_full": "SELECT emp_id, first_name, last_name, salary FROM employees WHERE department_id = 10 AND salary > 50000 ORDER BY salary DESC",
+  "explication_plan": "Analyse manuelle disponible",
+  "points_couteux": "Analyse manuelle disponible",
+  "recommandations": [
+    {
+      "type": "REECRITURE",
+      "description": "Remplacer SELECT * par colonnes spécifiques sur EMPLOYEES",
+      "sql": "SELECT col1, col2 FROM EMPLOYEES",
+      "gain": "30-50%"
+    },
+    {
+      "type": "STATISTIQUES",
+      "description": "Mettre à jour les statistiques sur EMPLOYEES",
+      "sql": "EXEC DBMS_STATS.GATHER_TABLE_STATS(USER, 'EMPLOYEES');",
+      "gain": "10-20%"
+    }
+  ],
+  "metrique_avant_apres": {
+    "avant_cout": 1800,
+    "apres_cout_estime": 1350,
+    "reduction_estimee": "25.0%"
+  },
+  "metrics": {
+    "elapsed_sec": 25.4,
+    "cpu_sec": 6.2,
+    "rows_processed": 45000,
+    "executions": 8,
+    "disk_reads": 6000,
+    "buffer_gets": 28000,
+    "optimizer_cost": 1800
+  },
+  "problems": [
+    "SELECT * - récupère toutes les colonnes",
+    "Coût optimiseur élevé (1800)"
+  ],
+  "plan_text": "📋 PLAN D'EXÉCUTION :\n════════════════════════════════════════════════════════════\n| ID | OPÉRATION | OBJET | COÛT | LIGNES |\n|----|-----------|-------|------|--------|\n|  0 | SELECT STATEMENT     |                 | 1800 |  45000 |\n|  1 | TABLE ACCESS FULL    | EMPLOYEES       | 1800 |  45000 |\n════════════════════════════════════════════════════════════",
+  "llm_used": false
+}

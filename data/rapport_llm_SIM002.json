@@ -1,0 +1,35 @@
+{
+  "sql_id": "SIM002",
+  "sql_query": "SELECT c.*, o.* FROM customers c JOIN orders o ON c.id = o.customer_id",
+  "timestamp": "2026-01-11T15:42:50.829583",
+  "sql_full": "SELECT c.customer_name, c.email, o.order_date, o.total_amount FROM customers c JOIN orders o ON c.id = o.customer_id WHERE o.status = 'COMPLETED'",
+  "explication_plan": "Analyse manuelle disponible",
+  "points_couteux": "Analyse manuelle disponible",
+  "recommandations": [
+    {
+      "type": "STATISTIQUES",
+      "description": "Mettre à jour les statistiques sur CUSTOMERS",
+      "sql": "EXEC DBMS_STATS.GATHER_TABLE_STATS(USER, 'CUSTOMERS');",
+      "gain": "10-20%"
+    }
+  ],
+  "metrique_avant_apres": {
+    "avant_cout": 4200,
+    "apres_cout_estime": 3675,
+    "reduction_estimee": "12.5%"
+  },
+  "metrics": {
+    "elapsed_sec": 38.7,
+    "cpu_sec": 8.9,
+    "rows_processed": 850000,
+    "executions": 12,
+    "disk_reads": 8500,
+    "buffer_gets": 52000,
+    "optimizer_cost": 4200
+  },
+  "problems": [
+    "Coût optimiseur élevé (4200)"
+  ],
+  "plan_text": "📋 PLAN D'EXÉCUTION :\n════════════════════════════════════════════════════════════\n| ID | OPÉRATION | OBJET | COÛT | LIGNES |\n|----|-----------|-------|------|--------|\n|  0 | SELECT STATEMENT     |                 | 4200 | 850000 |\n|  1 | HASH JOIN            |                 | 4200 | 850000 |\n|  2 | TABLE ACCESS FULL    | CUSTOMERS       | 1500 | 100000 |\n|  3 | TABLE ACCESS FULL    | ORDERS          | 2700 | 1500000 |\n════════════════════════════════════════════════════════════",
+  "llm_used": false
+}
