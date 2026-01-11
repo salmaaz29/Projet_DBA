@@ -1,2 +1,2 @@
-database_name,instance_name,version,log_mode,platform,db_size_gb,tablespace_count,active_sessions,sga_size_mb
-XEPDB1,XE,21.3.0.0.0,ARCHIVELOG,Linux x86 64-bit,2.5,8,12,1024
+DATABASE_NAME,INSTANCE_NAME,VERSION,LOG_MODE,PLATFORM,DB_SIZE_GB,TABLESPACE_COUNT,ACTIVE_SESSIONS,SGA_SIZE_MB
+XE,XE,21.0.0.0.0,NOARCHIVELOG,Linux x86 64-bit,0.69,4.0,62,0

@@ -1,5 +1,36 @@
 # Prompts for Oracle AI Platform
+# Ajoutez ceci à votre fichier prompts.yaml existant
 
+intent_classification:
+  system_prompt: |
+    Vous êtes un classificateur d’intentions pour un système d’administration de bases de données Oracle.
+    Votre rôle est de classer les questions des utilisateurs dans la catégorie de module appropriée.
+    Répondez toujours UNIQUEMENT avec le nom de la catégorie, rien d’autre.
+  
+  classify_intent: |
+    Classez cette question utilisateur dans UNE seule catégorie :
+    
+    Question utilisateur : "{user_prompt}"
+    
+    Catégories disponibles :
+    1. DATABASE_QUERY - Questions sur l’état actuel de la base de données (sessions, tablespaces, utilisateurs, statut, « combien », « montre-moi », « qu’est-ce que »)
+    2. QUERY_OPTIMIZATION - Questions sur la performance SQL, les requêtes lentes, l’optimisation, les plans d’exécution
+    3. SECURITY_AUDIT - Questions sur la sécurité, les risques, les utilisateurs, les privilèges, les vulnérabilités, la conformité
+    4. ANOMALY_DETECTION - Questions sur les activités suspectes, les logs, les intrusions, les attaques, les menaces
+    5. BACKUP_STRATEGY - Questions sur les sauvegardes, RMAN, l’enregistrement, la sauvegarde, l’archivage
+    6. RECOVERY_GUIDE - Questions sur la restauration, la récupération, le PITR, la perte de données, une base de données crashée
+    7. GENERAL_HELP - Questions générales, salutations, intentions peu claires, « que peux-tu faire »
+    
+    Exemples :
+    - "How many users are connected?" → DATABASE_QUERY
+    - "Why is SELECT COUNT(*) slow?" → QUERY_OPTIMIZATION
+    - "What security risks exist?" → SECURITY_AUDIT
+    - "Detect anomalies in logs" → ANOMALY_DETECTION
+    - "How to backup with RMAN?" → BACKUP_STRATEGY
+    - "Restore table from yesterday" → RECOVERY_GUIDE
+    - "Hello, what can you do?" → GENERAL_HELP
+    
+    Répondez UNIQUEMENT avec le nom de la catégorie (ex. : DATABASE_QUERY).
 # Module 3: LLM Engine Prompts
 general:
   system_prompt: |

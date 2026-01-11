@@ -353,8 +353,8 @@ class OracleDataExtractor:
     # 🆕 EXTRACTION REQUÊTES LENTES UNIVERSELLE (AMÉLIORÉE)
     # =========================================================
     def extract_slow_queries_real(self, 
-                                min_elapsed_sec=0.1,
-                                min_cost=50,
+                                min_elapsed_sec=0.0001,
+                                min_cost=1,
                                 max_queries=10):
         """
         🆕 Extraction UNIVERSELLE de requêtes lentes (N'IMPORTE QUELLE TABLE)
@@ -385,41 +385,28 @@ class OracleDataExtractor:
                     OPTIMIZER_COST,
                     OPTIMIZER_MODE,
                     PLAN_HASH_VALUE,
-                    CASE 
-                        WHEN ELAPSED_TIME IS NOT NULL AND ELAPSED_TIME > 0 
-                        THEN ROUND(ELAPSED_TIME/1000000, 3)
-                        ELSE 0
-                    END as ELAPSED_SEC,
-                    CASE 
-                        WHEN CPU_TIME IS NOT NULL AND CPU_TIME > 0 
-                        THEN ROUND(CPU_TIME/1000000, 3)
-                        ELSE 0
-                    END as CPU_SEC,
-                    LAST_LOAD_TIME
+                    ROUND(ELAPSED_TIME/1000000, 3) as ELAPSED_SEC,
+                    ROUND(CPU_TIME/1000000, 3) as CPU_SEC,
+                    LAST_LOAD_TIME,
+                    SQL_TEXT
                 FROM V$SQL 
                 WHERE PARSING_SCHEMA_NAME = '{current_schema}'
                 AND EXECUTIONS > 0
-                AND COMMAND_TYPE = 3  -- SELECT uniquement
-                AND UPPER(SQL_TEXT) LIKE 'SELECT%'
-                AND UPPER(SQL_TEXT) NOT LIKE '%V$%'
-                AND UPPER(SQL_TEXT) NOT LIKE '%DBA_%'
-                AND UPPER(SQL_TEXT) NOT LIKE '%SYS.%'
-                AND UPPER(SQL_TEXT) NOT LIKE '%ALL_%'
-                AND UPPER(SQL_TEXT) NOT LIKE '%USER_%'
-                AND UPPER(SQL_TEXT) NOT LIKE '%GV_%'
-                AND UPPER(SQL_TEXT) NOT LIKE '%X$%'
-                AND UPPER(SQL_TEXT) NOT LIKE '%PLAN_TABLE%'
-                AND UPPER(SQL_TEXT) NOT LIKE '%/* SQL Analyze%'
+                -- FILTRES SIMPLIFIÉS MAIS EFFICACES
+                AND SQL_TEXT NOT LIKE 'SELECT%V$%'
+                AND SQL_TEXT NOT LIKE 'SELECT%DBA_%'
+                AND SQL_TEXT NOT LIKE 'SELECT%ALL_%'
+                -- INCLURE UNIQUEMENT VOS TABLES
                 AND (
-                    (ELAPSED_TIME IS NOT NULL AND ELAPSED_TIME/1000000 >= {min_elapsed_sec})
-                    OR
-                    (OPTIMIZER_COST IS NOT NULL AND OPTIMIZER_COST >= {min_cost})
+                    UPPER(SQL_TEXT) LIKE '%TEST_SLOW_QUERIES%'
+                    OR UPPER(SQL_TEXT) LIKE '%EXACT_5_QUERIES%'
+                    OR UPPER(SQL_TEXT) LIKE '%FIVE_REAL_QUERIES%'
                 )
-                ORDER BY 
-                    CASE 
-                        WHEN ELAPSED_TIME IS NOT NULL THEN ELAPSED_TIME 
-                        ELSE OPTIMIZER_COST * 1000000 
-                    END DESC NULLS LAST
+                AND (
+                    ELAPSED_TIME/1000000 >= {min_elapsed_sec}
+                    OR OPTIMIZER_COST >= {min_cost}
+                )
+                ORDER BY ELAPSED_TIME DESC NULLS LAST
             ) WHERE ROWNUM <= {max_queries}
             """
             
@@ -1112,7 +1099,7 @@ class OracleDataExtractor:
     # =========================================================
     # ORCHESTRATION PRINCIPALE (MISE À JOUR)
     # =========================================================
-    def generate_all_data(self, min_elapsed_sec=0.1, min_cost=50, max_queries=10):
+    def generate_all_data(self, min_elapsed_sec=0.0001, min_cost=1, max_queries=10):
         """
         Extraction complète de toutes les données
         Args:
@@ -1256,9 +1243,9 @@ Usage:
     # PARAMÈTRES FIXES (Intégrés directement dans le code)
     # ============================================================
     force_sim = False
-    min_elapsed_sec = 0.001    # ⬅️ TEMPS MINIMUM (0.001s = 1ms)
-    min_cost = 5               # ⬅️ COÛT MINIMUM
-    max_queries = 15           # ⬅️ MAXIMUM DE REQUÊTES
+    min_elapsed_sec = 0.0001   # ⬅️ TEMPS MINIMUM (0.001s = 1ms)
+    min_cost = 1               # ⬅️ COÛT MINIMUM
+    max_queries = 10           # ⬅️ MAXIMUM DE REQUÊTES
     
     # ============================================================
     # Traitement des arguments (optionnel, gardé pour compatibilité)

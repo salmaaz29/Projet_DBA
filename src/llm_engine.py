@@ -391,3 +391,53 @@ class LLMEngine:
         except Exception as e:
             print(f"Connection test failed: {e}")
             return False
+        
+    def classify_intent_with_confidence(self, user_prompt: str) -> str:
+        """
+        Classify user intent into appropriate module category.
+        
+        Args:
+            user_prompt: The user's question or request
+        
+        Returns:
+            Category name (DATABASE_QUERY, QUERY_OPTIMIZATION, etc.)
+        """
+        prompt_template = self.prompts.get('intent_classification', {}).get('classify_intent', '')
+        
+        if not prompt_template:
+            print("Warning: Intent classification prompt not found, using fallback")
+            return "GENERAL_HELP"
+        
+        # Format the prompt
+        formatted_prompt = prompt_template.format(user_prompt=user_prompt)
+        
+        # Get classification with low temperature for consistency
+        try:
+            classification = self._call_llm(formatted_prompt, temperature=0.0)
+            
+            # Clean up response (remove any extra text)
+            classification = classification.strip().upper()
+            
+            # Validate response
+            valid_categories = [
+                "DATABASE_QUERY",
+                "QUERY_OPTIMIZATION",
+                "SECURITY_AUDIT",
+                "ANOMALY_DETECTION",
+                "BACKUP_STRATEGY",
+                "RECOVERY_GUIDE",
+                "GENERAL_HELP"
+            ]
+            
+            # Extract category from response if LLM added extra text
+            for category in valid_categories:
+                if category in classification:
+                    return category
+            
+            # Fallback if no valid category found
+            print(f"Warning: Invalid classification '{classification}', using GENERAL_HELP")
+            return "GENERAL_HELP"
+            
+        except Exception as e:
+            print(f"Error during intent classification: {e}")
+            return "GENERAL_HELP"

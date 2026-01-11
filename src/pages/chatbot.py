@@ -11,6 +11,10 @@ ORACLE_AVAILABLE = False
 
 def show():
     st.title("💬 Chatbot Oracle Expert")
+    # Debug mode toggle
+    st.sidebar.subheader("⚙️ Settings")
+    debug_mode = st.sidebar.checkbox("Debug Mode (show intent classification)", value=False)
+    st.session_state["debug_mode"] = debug_mode
     
     # Initialiser l'historique
     if "messages" not in st.session_state:
@@ -60,129 +64,58 @@ def show():
 
 
 def generate_intelligent_response(prompt):
-    """
-    Génère une réponse intelligente en utilisant LES VRAIS MODULES
-    Version améliorée avec meilleure détection des intentions
-    """
-
-    prompt_lower = prompt.lower().strip()
-
-    # ============================================================
-    # 🗄️ CONNEXION BASE DE DONNÉES POUR QUESTIONS SPÉCIFIQUES
-    # ============================================================
-
-    # Vérifier si la question porte sur des données spécifiques de la base
-    if is_database_specific_question(prompt_lower):
-        return handle_database_query(prompt)
+    """Generate response with classification reasoning"""
     
-    # ============================================================
-    # 🔍 DÉTECTION AMÉLIORÉE PAR MOTS-CLÉS
-    # ============================================================
-    
-    # 1. SAUVEGARDE / BACKUP (Module 7)
-    backup_keywords = [
-        "backup", "sauvegarde", "sauvegarder", "faire backup",
-        "comment sauvegarder", "créer backup", "mettre en backup",
-        "rman", "save", "sauvegarde oracle", "backup base",
-        "sauvegarde base", "sauvegarde données", "stratégie backup",
-        "c'est quoi rman", "qu'est-ce que rman", "rman c'est quoi",
-        "explique rman", "rman explication"
-    ]
-    if any(keyword in prompt_lower for keyword in backup_keywords):
-        return handle_backup_strategy(prompt)
-    
-    # 2. OPTIMISATION REQUÊTES (Module 5)
-    query_keywords = [
-        "lent", "performance", "optimiser", "optimise", "requête", "requete", "rquete", "sql",
-        "select", "count", "temps", "coût", "plan d'exécution",
-        "index", "optimisation", "slow", "fast", "vitesse",
-        "pourquoi lent", "requête lente", "requete lente", "rquete lente", "améliorer requête",
-        "comment optimiser", "comment optimise", "optimisation", "tuning",
-        "requête lente", "requete lente", "rquete lente", "query slow"
-    ]
-    if any(keyword in prompt_lower for keyword in query_keywords):
-        return handle_query_optimization(prompt)
-    
-    # 3. SÉCURITÉ (Module 4)
-    security_keywords = [
-        "risque", "sécurité", "audit", "score", "utilisateur", 
-        "privilège", "dba", "rôle", "mot de passe", "profil", 
-        "configuration", "danger", "vulnérabilité", "attaquer",
-        "protéger", "sécuriser", "est-ce sécurisé"
-    ]
-    if any(keyword in prompt_lower for keyword in security_keywords):
-        return handle_security_audit(prompt)
-    
-    # 4. ANOMALIES (Module 6)
-    anomaly_keywords = [
-        "anomalie", "log", "suspect", "intrusion", "attaque", 
-        "injection", "brute force", "escalade", "hacker", 
-        "malicieux", "anormal", "étrange", "suspicieux"
-    ]
-    if any(keyword in prompt_lower for keyword in anomaly_keywords):
-        return handle_anomaly_detection(prompt)
-    
-    # 5. RÉCUPÉRATION (Module 8)
-    recovery_keywords = [
-        "récupérer", "restaurer", "crash", "pitr", "point in time",
-        "table supprimée", "mars", "avril", "mai", "juin", 
-        "heure", "date", "restauration", "recovery", "guide",
-        "récupération", "perte données", "base crashée"
-    ]
-    if any(keyword in prompt_lower for keyword in recovery_keywords):
-        return handle_recovery_guide(prompt)
-    
-    # 6. QUESTIONS GÉNÉRIQUES SUR LA BASE
-    if any(word in prompt_lower for word in ["base", "database", "oracle", "état", "status"]):
-        return """
-🏛️ **État de votre base Oracle**
+    try:
+        from src.llm_engine import LLMEngine
+        llm = LLMEngine()
+        
+        intent = llm.classify_intent_with_confidence(prompt)
 
-Je peux vous donner plusieurs informations sur votre base:
+        print(f"[Intent] {intent}")
 
-**📊 Pour connaître l'état:**
-• "Quel est le score de sécurité?" → Audit complet
-• "Montre-moi les requêtes lentes" → Analyse performance
-• "Y a-t-il des anomalies?" → Surveillance logs
-
-**🔧 Pour des actions:**
-• "Optimise ma requête SELECT..." → Amélioration performance
-• "Quelle stratégie de backup?" → Plan sauvegarde
-• "Comment récupérer une table?" → Guide restauration
-
-**💡 Questions précises:**
-"Pourquoi ma requête SELECT * FROM clients est lente?"
-"Quels sont les risques de sécurité détectés?"
-"Comment sauvegarder ma base avec RMAN?"
-"""
-    
-    # ============================================================
-    # ❓ RÉPONSE PAR DÉFAUT AMÉLIORÉE
-    # ============================================================
-    return get_contextual_help(prompt_lower)
-
+        # Optional: Show classification to user in debug mode
+        if st.session_state.get("debug_mode", False):
+            st.info(f"🎯 **Classification:** {intent}")
+        
+        # Route to handler
+        routing_map = {
+            "DATABASE_QUERY": handle_database_query,
+            "QUERY_OPTIMIZATION": handle_query_optimization,
+            "SECURITY_AUDIT": handle_security_audit,
+            "ANOMALY_DETECTION": handle_anomaly_detection,
+            "BACKUP_STRATEGY": handle_backup_strategy,
+            "RECOVERY_GUIDE": handle_recovery_guide,
+            "GENERAL_HELP": lambda p: get_contextual_help(p.lower())
+        }
+        
+        handler = routing_map.get(intent, lambda p: get_contextual_help(p.lower()))
+        return handler(prompt)
+        
+    except Exception as e:
+        return f"❌ Error: {str(e)}\n\n{get_contextual_help(prompt.lower())}"
 
 # ============================================================
-# FONCTIONS D'INTÉGRATION AVEC LES MODULES RÉELS
+# FONCTIONS D'INTÉGRATION AVEC LES MODULES RÉELS - FIXED
 # ============================================================
 
 def handle_query_optimization(prompt):
-    """Intégration avec MODULE 5 - RÉEL avec LLM dynamique"""
+    """Intégration avec MODULE 5 - RÉEL avec LLM dynamique - FIXED"""
 
     try:
         from src.llm_engine import LLMEngine
-
-        # Initialiser le LLM Engine
         llm = LLMEngine()
 
         # Extraire la requête SQL du prompt si présente
         sql_query = extract_sql_from_prompt(prompt)
 
         if sql_query:
-            # Générer une analyse LLM pour cette requête spécifique
+            # ✅ ALREADY CORRECT: Uses specific SQL query AND user question
             analysis_prompt = f"""
 Analysez cette requête SQL Oracle et proposez des optimisations:
 
-Requête: {sql_query}
+Question de l'utilisateur: "{prompt}"
+Requête SQL: {sql_query}
 
 Veuillez fournir:
 1. Une explication du plan d'exécution potentiel
@@ -192,16 +125,10 @@ Veuillez fournir:
 
 Répondez en français de manière claire et structurée.
 """
-
             llm_response = llm.generate(analysis_prompt)
-
+            
             response = f"""
-🔍 **Analyse de Performance (Module 5 - Analyse LLM)**
-
-**Requête analysée:**
-```sql
-{sql_query}
-```
+🚀 **Optimisation de Requête (Module 5 - Analyse LLM)**
 
 {llm_response}
 
@@ -210,83 +137,75 @@ Répondez en français de manière claire et structurée.
             return response
 
         else:
-            # Pas de requête spécifique, analyser les données existantes
+            # ✅ FIXED: Now includes user question in all cases
             json_path = Path("data/queries_for_optimization.json")
 
             if json_path.exists():
                 try:
                     with open(json_path, 'r', encoding='utf-8') as f:
                         queries = json.load(f)
+                except (json.JSONDecodeError, IOError):
+                    queries = []
 
-                    if queries and len(queries) > 0:
-                        # Prendre la première requête
-                        query = queries[0]
-                        sql_text = query.get('sql_text', 'SELECT COUNT(*) FROM test_orders')
+                if queries and len(queries) > 0:
+                    query = queries[0]
+                    sql_text = query.get('sql_text', 'SELECT COUNT(*) FROM test_orders')
 
-                        # Générer une analyse LLM pour cette requête
-                        analysis_prompt = f"""
+                    # ✅ NOW INCLUDES USER QUESTION
+                    analysis_prompt = f"""
+Question de l'utilisateur: "{prompt}"
+
 Analysez cette requête SQL lente et proposez des optimisations:
 
 Requête: {sql_text}
 Temps d'exécution: {query.get('basic_metrics', {}).get('elapsed_sec', 0.5)}s
 Coût optimiseur: {query.get('basic_metrics', {}).get('optimizer_cost', 1500)}
 
-Fournissez une analyse complète avec recommandations.
+Répondez spécifiquement à la question de l'utilisateur en fournissant:
+1. Une analyse complète de la requête
+2. Les goulots d'étranglement identifiés
+3. Des recommandations d'optimisation concrètes
+4. Des exemples de requêtes optimisées
+5. L'impact estimé sur les performances
+
+Répondez en français de manière claire et structurée.
 """
+                    llm_response = llm.generate(analysis_prompt)
+                    
+                    response = f"""
+🚀 **Optimisation de Requête (Module 5 - Analyse LLM)**
 
-                        llm_response = llm.generate(analysis_prompt)
-
-                        response = f"""
-🔍 **Analyse de Performance (Module 5 - Données Réelles + LLM)**
-
-**Requête analysée:**
-```sql
-{sql_text[:200]}...
-```
-
-📊 **Métriques actuelles:**
-• Temps d'exécution: {query.get('basic_metrics', {}).get('elapsed_sec', 0.5):.3f}s
-• Coût optimiseur: {query.get('basic_metrics', {}).get('optimizer_cost', 1500)}
+**Requête analysée:** `{sql_text[:100]}{'...' if len(sql_text) > 100 else ''}`
 
 {llm_response}
 
-💡 *Analyse LLM en temps réel sur données réelles*
+💡 *Analyse générée par l'IA en temps réel*
 """
-                        return response
+                    return response
 
-                except Exception as e:
-                    return f"❌ Erreur lecture données Module 5: {str(e)}"
+            # ✅ FIXED: Includes user question in general prompt
+            general_prompt = f"""
+Question de l'utilisateur: "{prompt}"
 
-            # Fallback avec LLM général
-            general_prompt = """
-Vous êtes un expert en optimisation de requêtes Oracle. L'utilisateur demande des conseils d'optimisation.
-Fournissez des recommandations générales pour améliorer les performances des requêtes SQL Oracle.
-Incluez des exemples concrets et des bonnes pratiques.
+Vous êtes un expert en optimisation de requêtes Oracle.
+Répondez spécifiquement à la question ci-dessus en fournissant:
+- Une réponse directe à leur question
+- Des recommandations générales pour améliorer les performances des requêtes SQL Oracle
+- Des exemples concrets adaptés à la question
+- Des bonnes pratiques pertinentes (index, statistiques, hints, etc.)
+
+Répondez en français de manière claire et structurée.
 """
-
             llm_response = llm.generate(general_prompt)
-
-            return f"""
-🔍 **Conseils d'Optimisation Oracle (Module 5)**
+            
+            response = f"""
+🚀 **Optimisation de Requête (Module 5 - Analyse LLM)**
 
 {llm_response}
 
-💡 *Recommandations générées par l'IA*
+💡 *Analyse générée par l'IA en temps réel*
 """
-
-    except ImportError:
-        return """
-🔍 **Analyse de Performance**
-
-⚠️ Module LLM non disponible.
-
-**Pour analyser vos requêtes lentes:**
-1. Exécutez `python src/data_extractor.py` pour capturer les requêtes
-2. Lancez l'analyse via l'onglet "Performance"
-3. Vérifiez la configuration de l'API Groq
-
-💡 Le Module 5 analyse automatiquement les requêtes lentes.
-"""
+            return response
 
     except Exception as e:
         return f"❌ Erreur LLM: {str(e)}"
@@ -326,12 +245,10 @@ def extract_sql_from_prompt(prompt):
 
 
 def handle_security_audit(prompt):
-    """Intégration avec MODULE 4 - RÉEL avec LLM dynamique"""
+    """Intégration avec MODULE 4 - RÉEL avec LLM dynamique - ALREADY CORRECT"""
 
     try:
         from src.llm_engine import LLMEngine
-
-        # Initialiser le LLM Engine
         llm = LLMEngine()
 
         # Charger les données de sécurité existantes si disponibles
@@ -353,16 +270,20 @@ Données de sécurité existantes:
                 except:
                     pass
 
-        # Générer une analyse LLM de sécurité
+        # ✅ ALREADY CORRECT: Includes user's specific question
         security_prompt = f"""
-Vous êtes un expert en sécurité Oracle. Analysez la sécurité d'une base de données Oracle et fournissez:
+Question de l'utilisateur: "{prompt}"
 
-1. Évaluation globale de la sécurité (score sur 100)
-2. Principaux risques de sécurité identifiés
-3. Recommandations concrètes pour améliorer la sécurité
-4. Mesures de protection prioritaires
+Vous êtes un expert en sécurité Oracle. Répondez spécifiquement à la question ci-dessus concernant la sécurité d'une base de données Oracle.
 
 {security_context}
+
+Basé sur la question de l'utilisateur, fournissez:
+1. Une réponse directe à leur question spécifique
+2. Une évaluation de sécurité pertinente
+3. Les risques de sécurité identifiés en lien avec leur question
+4. Des recommandations concrètes pour améliorer la sécurité
+5. Des mesures de protection prioritaires
 
 Répondez en français de manière structurée et professionnelle.
 """
@@ -378,40 +299,18 @@ Répondez en français de manière structurée et professionnelle.
 """
         return response
 
-    except ImportError:
-        return """
-🔒 **Audit de Sécurité**
-
-⚠️ Module LLM non disponible.
-
-**Pour lancer un audit de sécurité:**
-```bash
-python src/security_audit.py
-```
-
-**L'audit analysera:**
-• Comptes utilisateurs et privilèges
-• Rôles et configurations
-• Profils de mots de passe
-• Permissions sensibles
-
-💡 Consultez l'onglet "Sécurité" pour plus de détails.
-"""
-
     except Exception as e:
         return f"❌ Erreur LLM: {str(e)}"
 
 
 def handle_anomaly_detection(prompt):
-    """Intégration avec MODULE 6 - RÉEL avec LLM dynamique"""
+    """Intégration avec MODULE 6 - RÉEL avec LLM dynamique - ALREADY CORRECT"""
 
     try:
         from src.llm_engine import LLMEngine
-
-        # Initialiser le LLM Engine
         llm = LLMEngine()
 
-        # Charger les données d'anomalies existantes si disponibles
+        # Charger les données d'anomalies existantes
         anomaly_results = Path("data/anomaly_analysis_results.json")
         anomaly_context = ""
 
@@ -435,17 +334,20 @@ Données d'anomalies existantes:
             except:
                 pass
 
-        # Générer une analyse LLM d'anomalies
+        # ✅ ALREADY CORRECT: Includes user's specific question
         anomaly_prompt = f"""
-Vous êtes un expert en cybersécurité Oracle. Analysez les logs d'audit d'une base Oracle pour détecter des anomalies et menaces de sécurité.
+Question de l'utilisateur: "{prompt}"
 
-Fournissez:
-1. Évaluation globale des anomalies détectées
-2. Types d'attaques ou comportements suspects identifiés
-3. Recommandations de sécurité immédiates
-4. Mesures de prévention à mettre en place
+Vous êtes un expert en cybersécurité Oracle. Répondez spécifiquement à la question ci-dessus concernant les logs d'audit et la détection d'anomalies.
 
 {anomaly_context}
+
+Basé sur la question de l'utilisateur, fournissez:
+1. Une réponse directe à leur question spécifique
+2. Une évaluation globale des anomalies détectées
+3. Les types d'attaques ou comportements suspects identifiés
+4. Des recommandations de sécurité immédiates
+5. Des mesures de prévention à mettre en place
 
 Répondez en français de manière structurée et professionnelle.
 """
@@ -461,42 +363,17 @@ Répondez en français de manière structurée et professionnelle.
 """
         return response
 
-    except ImportError:
-        return """
-🚨 **Détection d'Anomalies**
-
-⚠️ Module LLM non disponible.
-
-**Pour analyser les logs d'audit:**
-```bash
-python src/anomaly_detector.py
-```
-
-**Patterns détectés par le Module 6:**
-• Injection SQL
-• Escalade de privilèges
-• Exfiltration de données
-• Accès hors heures
-• Tentatives brute-force
-• Modifications DDL suspectes
-
-💡 Le système analyse automatiquement les logs avec un LLM.
-"""
-
     except Exception as e:
         return f"❌ Erreur LLM: {str(e)}"
 
-
 def handle_backup_strategy(prompt):
-    """Intégration avec MODULE 7 - RÉEL avec LLM dynamique"""
+    """Intégration avec MODULE 7 - RÉEL avec LLM dynamique - ALREADY CORRECT"""
 
     try:
         from src.llm_engine import LLMEngine
-
-        # Initialiser le LLM Engine
         llm = LLMEngine()
 
-        # Charger les données de sauvegarde existantes si disponibles
+        # Charger les données de sauvegarde existantes
         reports_dir = Path("reports")
         backup_context = ""
 
@@ -517,20 +394,21 @@ Stratégie de sauvegarde existante:
                 except:
                     pass
 
-        # Générer une stratégie LLM de sauvegarde
+        # ✅ ALREADY CORRECT: Includes user's specific question
         backup_prompt = f"""
-Vous êtes un expert en sauvegarde Oracle. Analysez les besoins de sauvegarde pour le scénario demandé et proposez une stratégie complète.
+Question de l'utilisateur: "{prompt}"
 
-Demande utilisateur: "{prompt}"
-
-Fournissez:
-1. Analyse des besoins de sauvegarde (RPO/RTO)
-2. Stratégie recommandée adaptée au contexte
-3. Procédures de sauvegarde avec commandes RMAN
-4. Plan de test et validation des sauvegardes
-5. Coûts estimés et optimisation budgétaire
+Vous êtes un expert en sauvegarde Oracle. Répondez spécifiquement à la question ci-dessus concernant les stratégies de sauvegarde.
 
 {backup_context}
+
+Basé sur la question de l'utilisateur, fournissez:
+1. Une réponse directe adaptée à leur demande spécifique
+2. Une analyse des besoins de sauvegarde (RPO/RTO) si pertinent
+3. Une stratégie recommandée adaptée au contexte de la question
+4. Des procédures de sauvegarde avec commandes RMAN concrètes
+5. Un plan de test et validation des sauvegardes
+6. Des coûts estimés et optimisation budgétaire si demandé
 
 Répondez en français de manière structurée et professionnelle.
 """
@@ -546,38 +424,17 @@ Répondez en français de manière structurée et professionnelle.
 """
         return response
 
-    except ImportError:
-        return """
-💾 **Stratégie de Sauvegarde**
-
-⚠️ Module LLM non disponible.
-
-**Pour analyser votre stratégie de backup:**
-```bash
-python src/module7_backup_recommender.py
-```
-
-**Stratégies recommandées par environnement:**
-• Production critique: RMAN avec sauvegarde incrémentale
-• Production standard: RMAN + Data Guard
-• Développement: Data Pump + export manuel
-
-💡 Le Module 7 analyse automatiquement vos besoins et recommande la stratégie optimale.
-"""
-
     except Exception as e:
         return f"❌ Erreur LLM: {str(e)}"
 
 def handle_recovery_guide(prompt):
-    """Intégration avec MODULE 8 - RÉEL avec LLM dynamique"""
+    """Intégration avec MODULE 8 - RÉEL avec LLM dynamique - ALREADY CORRECT"""
 
     try:
         from src.llm_engine import LLMEngine
-
-        # Initialiser le LLM Engine
         llm = LLMEngine()
 
-        # Charger les données de récupération existantes si disponibles
+        # Charger les données de récupération existantes
         reports_dir = Path("reports")
         recovery_context = ""
 
@@ -597,20 +454,21 @@ Scénario de récupération existant:
                 except:
                     pass
 
-        # Générer un guide LLM de récupération
+        # ✅ ALREADY CORRECT: Includes user's specific question
         recovery_prompt = f"""
-Vous êtes un expert en récupération de données Oracle. Créez un guide de récupération détaillé pour le scénario demandé.
+Question de l'utilisateur: "{prompt}"
 
-Scénario demandé: "{prompt}"
-
-Fournissez:
-1. Analyse du type d'incident et stratégie appropriée
-2. Procédure de récupération étape par étape
-3. Commandes RMAN et SQL nécessaires
-4. Temps estimé et prérequis
-5. Mesures de prévention pour éviter la récurrence
+Vous êtes un expert en récupération de données Oracle. Répondez spécifiquement à la question ci-dessus concernant la récupération de données.
 
 {recovery_context}
+
+Basé sur la question de l'utilisateur, fournissez:
+1. Une réponse directe au scénario spécifique demandé
+2. Une analyse du type d'incident et stratégie appropriée
+3. Une procédure de récupération étape par étape adaptée à la question
+4. Des commandes RMAN et SQL nécessaires concrètes
+5. Le temps estimé et les prérequis
+6. Des mesures de prévention pour éviter la récurrence
 
 Répondez en français de manière structurée et professionnelle.
 """
@@ -625,26 +483,6 @@ Répondez en français de manière structurée et professionnelle.
 💡 *Guide de récupération généré par l'IA en temps réel*
 """
         return response
-
-    except ImportError:
-        return """
-🔄 **Guide de Récupération**
-
-⚠️ Module LLM non disponible.
-
-**Pour générer un guide personnalisé:**
-```bash
-python src/recovery_guide.py
-```
-
-**Scénarios supportés par le Module 8:**
-• Restauration complète après crash
-• Point-in-Time Recovery (PITR)
-• Récupération de tables supprimées
-• Récupération de données spécifiques
-
-💡 Le Module 8 guide interactivement selon votre situation.
-"""
 
     except Exception as e:
         return f"❌ Erreur LLM: {str(e)}"
