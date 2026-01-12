@@ -5,6 +5,7 @@ Une plateforme intelligente de gestion et d'optimisation des bases de données O
 ## 📋 Table des Matières
 
 - [Vue d'ensemble](#vue-densemble)
+- [Guide de Démarrage](#guide-de-démarrage)
 - [Architecture](#architecture)
 - [Modules](#modules)
 - [Installation](#installation)
@@ -13,9 +14,6 @@ Une plateforme intelligente de gestion et d'optimisation des bases de données O
 - [Structure des fichiers](#structure-des-fichiers)
 - [API et Intégrations](#api-et-intégrations)
 - [Tests](#tests)
-- [Déploiement](#déploiement)
-- [Contribuer](#contribuer)
-- [Licence](#licence)
 
 ## 🎯 Vue d'ensemble
 
@@ -28,6 +26,80 @@ Oracle AI Platform est une application web moderne construite avec Streamlit qui
 - **💾 Gestion des sauvegardes** : Recommandations stratégiques de sauvegarde
 - **🔄 Récupération** : Guides automatisés de récupération après sinistre
 - **📚 Recherche vectorielle** : RAG (Retrieval-Augmented Generation) avec Pinecone
+
+## 🚀 Guide de Démarrage
+
+Ce guide vous aide à cloner le projet, configurer l'environnement et tester l'application rapidement.
+
+### 1. Cloner le Projet
+
+```bash
+# Cloner le dépôt Git
+git clone https://github.com/salmaaz29/Projet_DBA.git
+cd Projet_DBA
+```
+
+### 2. Configuration de l'Environnement
+
+#### Prérequis
+- Python 3.8 ou supérieur
+- Clés API pour Groq et Pinecone
+
+#### Installation
+```bash
+# Créer un environnement virtuel
+python -m venv venv
+
+# Activer l'environnement virtuel
+# Sur Windows :
+venv\Scripts\activate
+# Sur macOS/Linux :
+source venv/bin/activate
+
+# Installer les dépendances
+pip install -r requirements.txt
+```
+
+#### Configuration des Variables d'Environnement
+Créez un fichier `.env` à la racine du projet :
+
+```bash
+# Créez le fichier .env avec vos valeurs
+# Oracle Database
+ORACLE_HOST=localhost
+ORACLE_PORT=1522
+ORACLE_SERVICE=ORCLPDB1
+ORACLE_USER=admin_user
+ORACLE_PASSWORD=admin_password
+
+# API Keys
+GROQ_API_KEY=votre_cle_groq_ici
+PINECONE_API_KEY=votre_cle_pinecone_ici
+```
+
+### 3. Tester le Projet
+
+#### Tests Automatisés
+```bash
+# Exécuter tous les tests
+python  tests/nom_du_fichier_test_approprie
+
+# Ou 
+python src/nom_du_fichier_du_module 
+```
+
+#### Test Manuel de l'Application
+```bash
+# Démarrer l'application Streamlit
+streamlit run src/pages/dashboard.py
+
+# Ouvrir votre navigateur à l'adresse affichée (généralement http://localhost:8501)
+```
+
+#### Vérification des Connexions
+- Vérifiez que les clés API sont valides
+- Assurez-vous qu'Oracle Database est accessible
+- Testez la connexion Pinecone
 
 ## 🏗️ Architecture
 
