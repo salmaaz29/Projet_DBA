@@ -1,8 +1,10 @@
-# dashboard.py - VERSION AVEC INITIALISATION CENTRALISÉE
+# dashboard.py - VERSION SANS GRAPHIQUE NI MÉTRIQUES
+
 import streamlit as st
 import sys
 from pathlib import Path
 import os
+import time
 
 # ============================================================
 # CONFIGURATION DES CHEMINS - VERSION CORRIGÉE
@@ -34,12 +36,11 @@ os.chdir(PROJECT_ROOT)
 def initialize_all_modules():
     """
     Initialise TOUS les modules UNE SEULE FOIS au démarrage
-    Utilisé par tous les onglets
+    Version corrigée pour compatibilité avec vos modifications
     """
-    import time
     
     print("\n" + "="*60)
-    print("🔧 INITIALISATION CENTRALISÉE DES MODULES")
+    print("🔧 INITIALISATION CENTRALISÉE DES MODULES (V2)")
     print("="*60)
     
     modules_initialized = {
@@ -59,24 +60,27 @@ def initialize_all_modules():
         # MODULE 3 : LLM Engine + RAG (BASE POUR TOUT)
         # ============================================================
         print("\n[1/8] 🤖 Initialisation LLM + RAG...")
-        time.sleep(0.1)
         
         try:
             from llm_engine import LLMEngine
             from rag_setup import OracleRAGSetup
 
-            print("      Chargement RAG...")
+            print("      → Chargement RAG...")
             rag = OracleRAGSetup(namespace="rag-docs")
+            print("      → RAG chargé")
 
-            print("      Chargement LLM Engine...")
+            print("      → Chargement LLM Engine...")
             llm_engine = LLMEngine(model="meta-llama/llama-4-scout-17b-16e-instruct")
+            print("      → LLM Engine chargé")
 
             modules_initialized['llm_engine'] = llm_engine
             modules_initialized['rag_setup'] = rag
             print("      ✅ LLM + RAG OK")
 
         except Exception as e:
-            print(f"      ⚠️  LLM/RAG échec: {str(e)[:80]}")
+            print(f"      ❌ LLM/RAG échec: {str(e)[:100]}")
+            import traceback
+            traceback.print_exc()
             modules_initialized['llm_engine'] = None
             modules_initialized['rag_setup'] = None
         
@@ -84,13 +88,11 @@ def initialize_all_modules():
         # MODULE 1 : Data Extractor (OPTIONNEL)
         # ============================================================
         print("\n[2/8] 📊 Data Extractor...")
-        time.sleep(0.1)
         
         try:
             from data_extractor import OracleDataExtractor
             
-            # Mode simulation par défaut pour éviter les blocages
-            extractor = OracleDataExtractor(use_simulation=False)
+            extractor = OracleDataExtractor(use_simulation=True)  # Simulation par défaut
             modules_initialized['data_extractor'] = extractor
             print("      ✅ Data Extractor OK (mode simulation)")
             
@@ -104,79 +106,64 @@ def initialize_all_modules():
         llm = modules_initialized.get('llm_engine')
         rag = modules_initialized.get('rag_setup')
         
-        # MODULE 4 : Security Audit
-        print("\n[3/8] 🔒 Module 4 - Security Audit...")
-        time.sleep(0.1)
-        
-        try:
-            from security_audit import SecurityAudit
-
-            if llm:
+        if not llm:
+            print("⚠️  LLM non disponible - Modules 4-8 désactivés")
+        else:
+            # MODULE 4 : Security Audit
+            print("\n[3/8] 🔒 Module 4 - Security Audit...")
+            
+            try:
+                from security_audit import SecurityAudit
                 modules_initialized['security_audit'] = SecurityAudit(llm_engine=llm)
                 print("      ✅ Security Audit OK")
-            else:
-                print("      ⚠️  Security Audit nécessite LLM")
-        except Exception as e:
-            print(f"      ⚠️  Security Audit échec: {str(e)[:80]}")
-        
-        # MODULE 5 : Query Optimizer
-        print("\n[4/8] ⚡ Module 5 - Query Optimizer...")
-        time.sleep(0.1)
-        
-        try:
-            from query_optimizer import OracleQueryOptimizerLLM
+            except Exception as e:
+                print(f"      ⚠️  Security Audit échec: {str(e)[:80]}")
             
-            if llm:
+            # MODULE 5 : Query Optimizer
+            print("\n[4/8] ⚡ Module 5 - Query Optimizer...")
+            
+            try:
+                from query_optimizer import OracleQueryOptimizerLLM
                 modules_initialized['query_optimizer'] = OracleQueryOptimizerLLM(llm_engine=llm)
                 print("      ✅ Query Optimizer OK")
-            else:
-                print("      ⚠️  Query Optimizer nécessite LLM")
-        except Exception as e:
-            print(f"      ⚠️  Query Optimizer échec: {str(e)[:80]}")
-        
-        # MODULE 6 : Anomaly Detector
-        print("\n[5/8] 🚨 Module 6 - Anomaly Detector...")
-        time.sleep(0.1)
-        
-        try:
-            from module6_anomaly_detector import OracleAnomalyDetector
+            except Exception as e:
+                print(f"      ⚠️  Query Optimizer échec: {str(e)[:80]}")
             
-            modules_initialized['anomaly_detector'] = OracleAnomalyDetector(
-                llm_engine=llm, 
-                rag_setup=rag
-            )
-            print("      ✅ Anomaly Detector OK")
-        except Exception as e:
-            print(f"      ⚠️  Anomaly Detector échec: {str(e)[:80]}")
-        
-        # MODULE 7 : Backup Recommender
-        print("\n[6/8] 💾 Module 7 - Backup Recommender...")
-        time.sleep(0.1)
+            # MODULE 6 : Anomaly Detector
+            print("\n[5/8] 🚨 Module 6 - Anomaly Detector...")
+            
+            try:
+                from module6_anomaly_detector import OracleAnomalyDetector
+                modules_initialized['anomaly_detector'] = OracleAnomalyDetector(
+                    llm_engine=llm, 
+                    rag_setup=rag
+                )
+                print("      ✅ Anomaly Detector OK")
+            except Exception as e:
+                print(f"      ⚠️  Anomaly Detector échec: {str(e)[:80]}")
+            
+            # MODULE 7 : Backup Recommender
+            print("\n[6/8] 💾 Module 7 - Backup Recommender...")
 
-        try:
-            from module7_backup_recommender import OracleBackupRecommender
+            try:
+                from module7_backup_recommender import OracleBackupRecommender
+                modules_initialized['backup_recommender'] = OracleBackupRecommender(
+                    llm_engine=llm,
+                    rag_setup=rag
+                )
+                print("      ✅ Backup Recommender OK")
+            except Exception as e:
+                print(f"      ⚠️  Backup Recommender échec: {str(e)[:80]}")
+            
+            # MODULE 8 : Recovery Guide
+            print("\n[7/8] 🔄 Module 8 - Recovery Guide...")
 
-            modules_initialized['backup_recommender'] = OracleBackupRecommender(
-                llm_engine=llm,
-                rag_setup=rag
-            )
-            print("      ✅ Backup Recommender OK")
-        except Exception as e:
-            print(f"      ⚠️  Backup Recommender échec: {str(e)[:80]}")
-        
-        # MODULE 8 : Recovery Guide
-        print("\n[7/8] 🔄 Module 8 - Recovery Guide...")
-        time.sleep(0.1)
-
-        try:
-            from recovery_guide import OracleRecoveryGuide
-
-            modules_initialized['recovery_guide'] = OracleRecoveryGuide(
-                rag_setup=rag
-            )
-            print("      ✅ Recovery Guide OK")
-        except Exception as e:
-            print(f"      ⚠️  Recovery Guide échec: {str(e)[:80]}")
+            try:
+                from recovery_guide import OracleRecoveryGuide
+                modules_initialized['recovery_guide'] = OracleRecoveryGuide(rag_setup=rag)
+                print("      ✅ Recovery Guide OK")
+            except Exception as e:
+                print(f"      ⚠️  Recovery Guide échec: {str(e)[:80]}")
         
         print("\n[8/8] ✅ Finalisation...")
         modules_initialized['init_status'] = 'completed'
@@ -195,7 +182,7 @@ def initialize_all_modules():
 
 
 # ============================================================
-# INTERFACE STREAMLIT
+# INTERFACE STREAMLIT - VERSION SIMPLIFIÉE
 # ============================================================
 
 def main():
@@ -215,6 +202,46 @@ def main():
     .stTabs [data-baseweb="tab-list"] {
         gap: 2rem;
     }
+    
+    /* Améliorations visuelles */
+    .module-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+        padding: 20px;
+        color: white;
+        margin-bottom: 15px;
+    }
+    
+    .status-success {
+        color: #00C853;
+        font-weight: bold;
+    }
+    
+    .status-warning {
+        color: #FF9800;
+        font-weight: bold;
+    }
+    
+    .status-error {
+        color: #F44336;
+        font-weight: bold;
+    }
+    
+    .chat-message {
+        padding: 10px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .chat-user {
+        background-color: #E3F2FD;
+        border-left: 4px solid #2196F3;
+    }
+    
+    .chat-assistant {
+        background-color: #F1F8E9;
+        border-left: 4px solid #4CAF50;
+    }
     </style>
     """, unsafe_allow_html=True)
     
@@ -222,37 +249,15 @@ def main():
     # INITIALISATION AU DÉMARRAGE (CACHE)
     # ============================================================
     if 'modules' not in st.session_state:
-        # Afficher la progression
-        progress_placeholder = st.empty()
-        
-        with progress_placeholder.container():
-            st.info("🔧 Initialisation des modules en cours...")
-            progress_bar = st.progress(0)
-            status_text = st.empty()
-            
-            # Simuler la progression pendant l'init
-            import time
-            for i in range(0, 100, 12):
-                progress_bar.progress(i)
-                time.sleep(0.1)
-            
-            # Lancer l'initialisation
+        with st.spinner("🔧 Initialisation des modules..."):
             st.session_state.modules = initialize_all_modules()
-            
-            progress_bar.progress(100)
-            status_text.success("✅ Modules chargés!")
-            time.sleep(1)
-        
-        progress_placeholder.empty()
     
     modules = st.session_state.modules
     
     # Vérifier le statut d'initialisation
     if modules.get('init_status') == 'error':
         st.error("❌ Erreur lors de l'initialisation. Consultez la console.")
-    elif modules.get('init_status') == 'completed':
-        pass  # OK
-    else:
+    elif modules.get('init_status') == 'running':
         st.warning("⚠️ Initialisation en cours...")
     
     # ============================================================
@@ -264,51 +269,170 @@ def main():
     # Statut des modules
     st.sidebar.subheader("📊 Statut Modules")
     
-    module_status = {
-        'LLM Engine': '✅' if modules.get('llm_engine') else '❌',
-        'RAG Setup': '✅' if modules.get('rag_setup') else '❌',
-        'Oracle DB': '✅' if modules.get('data_extractor') and not modules['data_extractor'].use_simulation else '⚠️',
-        'Security (M4)': '✅' if modules.get('security_audit') else '❌',
-        'Performance (M5)': '✅' if modules.get('query_optimizer') else '❌',
-        'Anomalies (M6)': '✅' if modules.get('anomaly_detector') else '❌',
-        'Backup (M7)': '✅' if modules.get('backup_recommender') else '❌',
-        'Recovery (M8)': '✅' if modules.get('recovery_guide') else '❌'
-    }
+    # Vérification plus robuste des modules
+    llm_status = "✅" if modules.get('llm_engine') else "❌"
+    rag_status = "✅" if modules.get('rag_setup') else "❌"
     
-    for module_name, status in module_status.items():
-        st.sidebar.text(f"{status} {module_name}")
+    # Afficher avec couleurs
+    st.sidebar.markdown(f"""
+    <div style='margin-bottom: 10px;'>
+    <span style='font-weight: bold;'>Core Modules:</span><br>
+    {llm_status} <span style='color: {"green" if modules.get('llm_engine') else "red"};'>LLM Engine</span><br>
+    {rag_status} <span style='color: {"green" if modules.get('rag_setup') else "red"};'>RAG Setup</span>
+    </div>
+    """, unsafe_allow_html=True)
     
     st.sidebar.markdown("---")
     
-    # Onglets
-    page = st.sidebar.radio(
-        "Navigation",
-        ["🏠 Accueil", "💬 Chatbot", "⚡ Performance", "🔒 Sécurité", "💾 Sauvegardes"],
+    # Onglets améliorés
+    st.sidebar.subheader("📋 Navigation")
+    
+    # Utiliser des boutons radio avec icônes
+    page_options = {
+        "🏠 Accueil": "accueil",
+        "💬 Chatbot IA": "chatbot",
+        "⚡ Performance": "performance",
+        "🔒 Sécurité": "securite",
+        "💾 Sauvegardes": "sauvegardes",
+        "📊 Dashboard": "dashboard"
+    }
+    
+    selected_page = st.sidebar.radio(
+        "Choisissez une page:",
+        list(page_options.keys()),
         label_visibility="collapsed"
     )
     
+    # Bouton pour recharger les modules
+    if st.sidebar.button("🔄 Recharger les modules"):
+        st.cache_resource.clear()
+        if 'modules' in st.session_state:
+            del st.session_state.modules
+        st.rerun()
+    
+    st.sidebar.markdown("---")
+    st.sidebar.caption(f"Version 1.0 • {time.strftime('%d/%m/%Y %H:%M')}")
+    
     # ============================================================
-    # AFFICHAGE DES PAGES
+    # AFFICHAGE DES PAGES AVEC GESTION D'ERREURS
     # ============================================================
-    if page == "🏠 Accueil":
-        import accueil
-        accueil.show()
+    try:
+        page_file = page_options[selected_page]
+        
+        if selected_page == "🏠 Accueil":
+            try:
+                import accueil
+                accueil.show()
+            except Exception as e:
+                st.error(f"❌ Erreur chargement page Accueil: {e}")
+                st.info("Vérifiez que le fichier accueil.py existe dans le dossier pages/")
+        
+        elif selected_page == "💬 Chatbot IA":
+            try:
+                import chatbot
+                chatbot.show()
+            except Exception as e:
+                st.error(f"❌ Erreur chargement page Chatbot: {e}")
+                st.code(f"Erreur: {str(e)}", language="python")
+        
+        elif selected_page == "⚡ Performance":
+            try:
+                import performance
+                performance.show()
+            except Exception as e:
+                st.error(f"❌ Erreur chargement page Performance: {e}")
+        
+        elif selected_page == "🔒 Sécurité":
+            try:
+                import securite
+                securite.show()
+            except Exception as e:
+                st.error(f"❌ Erreur chargement page Sécurité: {e}")
+        
+        elif selected_page == "💾 Sauvegardes":
+            try:
+                import sauvegardes
+                sauvegardes.show()
+            except Exception as e:
+                st.error(f"❌ Erreur chargement page Sauvegardes: {e}")
+        
+        elif selected_page == "📊 Dashboard":
+            # Page dashboard intégrée (simplifiée)
+            show_dashboard_page(modules)
     
-    elif page == "💬 Chatbot":
-        import chatbot
-        chatbot.show()
+    except Exception as e:
+        st.error(f"❌ Erreur navigation: {e}")
+        st.info("Vérifiez que tous les fichiers de pages existent dans le dossier pages/")
+
+def show_dashboard_page(modules):
+    """Page dashboard simplifiée - SANS MÉTRIQUES NI GRAPHIQUE"""
+    st.title("📊 Dashboard Oracle AI")
     
-    elif page == "⚡ Performance":
-        import performance
-        performance.show()
+    # Section modules uniquement
+    st.subheader("🔧 Modules")
     
-    elif page == "🔒 Sécurité":
-        import securite
-        securite.show()
+    module_list = [
+        ("LLM Engine", modules.get('llm_engine'), "🤖", "Core IA"),
+        ("RAG Setup", modules.get('rag_setup'), "📚", "Recherche vectorielle"),
+        ("Security Audit", modules.get('security_audit'), "🔒", "Module 4"),
+        ("Query Optimizer", modules.get('query_optimizer'), "⚡", "Module 5"),
+        ("Anomaly Detector", modules.get('anomaly_detector'), "🚨", "Module 6"),
+        ("Backup Recommender", modules.get('backup_recommender'), "💾", "Module 7"),
+        ("Recovery Guide", modules.get('recovery_guide'), "🔄", "Module 8"),
+    ]
     
-    elif page == "💾 Sauvegardes":
-        import sauvegardes
-        sauvegardes.show()
+    cols = st.columns(3)
+    for idx, (name, module, icon, desc) in enumerate(module_list):
+        with cols[idx % 3]:
+            status = "✅" if module else "❌"
+            color = "green" if module else "red"
+            st.markdown(f"""
+            <div style='padding: 15px; border-radius: 10px; border: 2px solid {color}; margin-bottom: 10px;'>
+                <div style='font-size: 24px;'>{icon}</div>
+                <div style='font-weight: bold;'>{name}</div>
+                <div style='color: gray; font-size: 12px;'>{desc}</div>
+                <div style='color: {color}; font-weight: bold;'>{status}</div>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    # Section tests rapides
+    st.markdown("---")
+    st.subheader("🧪 Tests rapides")
+    
+    if modules.get('llm_engine'):
+        if st.button("Test LLM (hello)"):
+            with st.spinner("Test en cours..."):
+                try:
+                    response = modules['llm_engine'].generate("Réponds 'OK' si tu fonctionnes")
+                    st.success(f"✅ Réponse LLM: {response[:50]}...")
+                except Exception as e:
+                    st.error(f"❌ Erreur: {e}")
+    
+    if modules.get('rag_setup'):
+        if st.button("Test RAG (Oracle)"):
+            with st.spinner("Recherche en cours..."):
+                try:
+                    results = modules['rag_setup'].retrieve_context("Oracle performance", n_results=2)
+                    st.success(f"✅ {len(results)} résultat(s) trouvé(s)")
+                except Exception as e:
+                    st.error(f"❌ Erreur: {e}")
+
+    # Test Pinecone integration if available
+    if modules.get('llm_engine') and modules.get('rag_setup'):
+        if st.button("Test Pinecone Integration"):
+            with st.spinner("Test intégration Pinecone..."):
+                try:
+                    # Test the new Pinecone integration method
+                    success = modules['llm_engine'].test_pinecone_integration(
+                        pinecone_client=modules['rag_setup'].pinecone_client,
+                        test_query="performance optimisation Oracle"
+                    )
+                    if success:
+                        st.success("✅ Intégration Pinecone réussie")
+                    else:
+                        st.error("❌ Échec de l'intégration Pinecone")
+                except Exception as e:
+                    st.error(f"❌ Erreur: {e}")
 
 
 if __name__ == "__main__":

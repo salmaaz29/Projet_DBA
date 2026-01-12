@@ -28,10 +28,7 @@ def show():
         if metrics_csv.exists():
             metrics_df = pd.read_csv(metrics_csv)
             if not metrics_df.empty:
-                # Prendre la dernière ligne (métriques les plus récentes)
                 latest_metrics = metrics_df.iloc[-1]
-
-                # Extraire les métriques pertinentes
                 cpu_usage = latest_metrics.get('cpu_usage_percent', cpu_usage)
                 memory_usage = latest_metrics.get('memory_usage_percent', memory_usage)
                 iops = latest_metrics.get('iops', iops)
@@ -56,18 +53,26 @@ def show():
     st.subheader("🐌 Requêtes Lentes (Top 5)")
 
     slow_queries_df = None
+    slow_queries_csv = Path("data/slow_queries_detailed.csv")
 
-    # Essayer de charger les vraies requêtes lentes
     try:
-        slow_queries_csv = Path("data/slow_queries_detailed.csv")
         if slow_queries_csv.exists():
             slow_queries_df = pd.read_csv(slow_queries_csv)
 
-            # Trier par temps d'exécution décroissant et prendre top 5
-            if 'elapsed_sec' in slow_queries_df.columns:
-                slow_queries_df = slow_queries_df.nlargest(5, 'elapsed_sec').copy()
+            # Vérifier colonne SQL_ID
+            if 'SQL_ID' not in slow_queries_df.columns:
+                st.warning("Colonne SQL_ID manquante, utilisation des données d'exemple")
+                slow_queries_df = None
+            else:
+                # Renommer les colonnes pour usage uniforme
+                slow_queries_df.rename(columns={
+                    'SQL_ID': 'SQL ID',
+                    'ELAPSED_SEC': 'Temps (s)',
+                    'EXECUTIONS': 'Exécutions',
+                    'OPTIMIZER_COST': 'Coût'
+                }, inplace=True)
 
-                # Ajouter une colonne de statut basée sur le temps
+                # Ajouter colonne Status
                 def get_status(elapsed):
                     if elapsed > 10:
                         return "🔴 Critique"
@@ -78,20 +83,20 @@ def show():
                     else:
                         return "🟢 Basse"
 
-                slow_queries_df['Status'] = slow_queries_df['elapsed_sec'].apply(get_status)
+                slow_queries_df['Status'] = slow_queries_df['Temps (s)'].apply(get_status)
 
-                # Sélectionner et renommer les colonnes
-                display_cols = ['sql_id', 'elapsed_sec', 'executions', 'optimizer_cost', 'Status']
-                display_names = ['SQL ID', 'Temps (s)', 'Exécutions', 'Coût', 'Status']
+                # Trier par temps décroissant et prendre top 5
+                slow_queries_df = slow_queries_df.nlargest(5, 'Temps (s)')
 
-                slow_queries_df = slow_queries_df[display_cols].copy()
-                slow_queries_df.columns = display_names
+                if slow_queries_df.empty:
+                    slow_queries_df = None
 
     except Exception as e:
         st.warning(f"Erreur chargement requêtes lentes: {str(e)[:50]}")
+        slow_queries_df = None
 
-    # Si pas de données réelles, utiliser des exemples
-    if slow_queries_df is None or slow_queries_df.empty:
+    # Fallback sur données d'exemple si nécessaire
+    if slow_queries_df is None:
         slow_queries_df = pd.DataFrame({
             "SQL ID": ["a1b2c3", "d4e5f6", "g7h8i9", "j0k1l2", "m3n4o5"],
             "Temps (s)": [45.2, 32.1, 28.7, 22.4, 18.9],
@@ -99,31 +104,25 @@ def show():
             "Coût": [95, 87, 76, 68, 59],
             "Status": ["🔴 Critique", "🟠 Haute", "🟡 Moyenne", "🟢 Basse", "🟢 Basse"]
         })
-        st.caption("*Données d'exemple - Lancez l'extraction de données pour voir les vraies requêtes lentes*")
 
     st.dataframe(slow_queries_df, use_container_width=True, hide_index=True)
 
     # ============================================================
-    # ANALYSE DÉTAILLÉE DE REQUÊTE - DONNÉES RÉELLES (MODULE 5)
+    # ANALYSE DÉTAILLÉE DE REQUÊTE
     # ============================================================
 
     st.subheader("🔍 Analyse de Requête")
 
-    # Liste des SQL IDs disponibles
     available_sql_ids = slow_queries_df["SQL ID"].tolist()
-
     query_to_analyze = st.selectbox(
         "Sélectionnez une requête à analyser:",
         available_sql_ids
     )
 
     if query_to_analyze:
-        # Essayer de charger l'analyse réelle depuis les rapports
         analysis_found = False
-
         try:
-            # Chercher le rapport d'analyse pour cette requête
-            sql_id_clean = query_to_analyze.replace('/', '_')  # Éviter les caractères spéciaux
+            sql_id_clean = query_to_analyze.replace('/', '_')
             report_pattern = f"rapport_llm_{sql_id_clean}.json"
             report_path = Path("data") / report_pattern
 
@@ -131,11 +130,9 @@ def show():
                 with open(report_path, 'r', encoding='utf-8') as f:
                     report = json.load(f)
 
-                # Afficher le SQL
                 sql_text = report.get('sql_text', 'SQL non disponible')
                 st.code(sql_text, language="sql")
 
-                # Afficher l'analyse
                 explication = report.get('explication_plan', 'Analyse non disponible')
                 points_couteux = report.get('points_couteux', 'Non identifiés')
                 recommandations = report.get('recommandations', [])
@@ -153,7 +150,6 @@ def show():
 💡 **Recommandations d'optimisation:**
 """)
 
-                # Afficher les recommandations (max 3)
                 for i, rec in enumerate(recommandations[:3], 1):
                     rec_type = rec.get('type', 'OPTIMISATION')
                     rec_desc = rec.get('description', '')
@@ -175,7 +171,7 @@ def show():
         except Exception as e:
             st.warning(f"Erreur chargement analyse détaillée: {str(e)[:50]}")
 
-        # Si pas d'analyse réelle, afficher l'exemple
+        # Fallback exemple
         if not analysis_found:
             st.code("""
 SELECT e.emp_name, d.dept_name, s.salary
@@ -209,28 +205,20 @@ ORDER BY s.salary DESC;
 
     st.subheader("📈 Tendances de Performance")
 
-    # Essayer de charger les tendances réelles
     perf_data = None
-
     try:
         if metrics_csv.exists():
             metrics_df = pd.read_csv(metrics_csv)
-
-            # Prendre les dernières 6 heures de données
             if len(metrics_df) >= 6:
                 recent_metrics = metrics_df.tail(6).copy()
-
-                # Créer les données pour le graphique
                 perf_data = pd.DataFrame({
                     "Heure": [f"{i}h" for i in range(6)],
                     "Requêtes/s": recent_metrics.get('queries_per_sec', [120, 85, 450, 520, 480, 210]),
                     "Temps moyen (ms)": recent_metrics.get('avg_query_time_ms', [8, 12, 18, 22, 19, 14])
                 })
-
     except Exception as e:
         st.warning(f"Erreur chargement tendances: {str(e)[:50]}")
 
-    # Si pas de données réelles, utiliser des exemples
     if perf_data is None:
         perf_data = pd.DataFrame({
             "Heure": ["00h", "04h", "08h", "12h", "16h", "20h"],
@@ -246,7 +234,6 @@ ORDER BY s.salary DESC;
     # ============================================================
 
     st.subheader("⚙️ Actions Disponibles")
-
     col1, col2 = st.columns(2)
 
     with col1:
@@ -261,6 +248,5 @@ ORDER BY s.salary DESC;
                 st.info("Exécution de: python src/data_extractor.py")
                 st.success("✅ Métriques mises à jour!")
 
-    # Lien vers le chatbot
     st.markdown("---")
     st.info("💬 **Besoin d'aide?** Demandez au chatbot: 'Pourquoi ma requête SELECT est lente?'")

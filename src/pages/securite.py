@@ -19,18 +19,31 @@ def show():
     high_risks = 0
     total_configs = 0
     ok_configs = 0
+    report = None  # Initialiser report à None
 
     # Charger le dernier rapport de sécurité
     try:
         reports_dir = Path("reports")
         if reports_dir.exists():
-            security_reports = sorted(reports_dir.glob("security_audit_*.json"), reverse=True)
+            security_reports = sorted(reports_dir.glob("security_audit*.json"), reverse=True)
             if security_reports:
-                with open(security_reports[0], 'r', encoding='utf-8') as f:
+                latest_report = security_reports[0]
+                st.info(f"📁 Rapport chargé: {latest_report.name}")
+                
+                with open(latest_report, 'r', encoding='utf-8') as f:
                     report = json.load(f)
-                    security_score = report.get('score_securite', 0)
-                    risques = report.get('risques_identifies', [])
-
+                    
+                    # CORRECTION ICI: Accéder aux données dans audit_results
+                    if 'audit_results' in report:
+                        audit_data = report['audit_results']
+                        security_score = audit_data.get('score_securite', 0)
+                        risques = audit_data.get('risques_identifies', [])
+                    else:
+                        # Si la structure est différente, essayer à la racine
+                        security_score = report.get('score_securite', 0)
+                        risques = report.get('risques_identifies', [])
+                    
+                    # Compter les risques
                     for risque in risques:
                         if risque.get('severite') == 'CRITIQUE':
                             critical_risks += 1
@@ -40,8 +53,17 @@ def show():
                     # Estimation des configs OK (total - risques)
                     total_configs = 30  # Estimation
                     ok_configs = max(0, total_configs - len(risques))
+                    
+                    # DEBUG: Afficher les données chargées
+                    st.session_state['debug_security'] = {
+                        'score': security_score,
+                        'risks_found': len(risques),
+                        'critical': critical_risks,
+                        'high': high_risks
+                    }
+                    
     except Exception as e:
-        st.warning(f"Erreur chargement rapport sécurité: {str(e)[:50]}")
+        st.warning(f"Erreur chargement rapport sécurité: {str(e)[:100]}")
 
     st.subheader("📊 Score de Sécurité Global")
 
@@ -52,11 +74,23 @@ def show():
 
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("Risques Critiques", critical_risks, delta_color="inverse" if critical_risks > 0 else "normal")
+        # CORRECTION: Ajouter delta pour afficher le changement
+        delta_critique = f"+{critical_risks}" if critical_risks > 0 else "0"
+        st.metric("Risques Critiques", critical_risks, 
+                 delta=delta_critique,
+                 delta_color="inverse" if critical_risks > 0 else "normal")
     with col2:
-        st.metric("Risques Haute", high_risks, f"+{high_risks}" if high_risks > 0 else "0")
+        delta_haute = f"+{high_risks}" if high_risks > 0 else "0"
+        st.metric("Risques Haute", high_risks, 
+                 delta=delta_haute,
+                 delta_color="inverse" if high_risks > 0 else "normal")
     with col3:
-        st.metric("Configurations OK", f"{ok_configs}/{total_configs}", f"{ok_configs/total_configs*100:.0f}%" if total_configs > 0 else "N/A")
+        if total_configs > 0:
+            percentage = (ok_configs / total_configs) * 100
+            st.metric("Configurations OK", f"{ok_configs}/{total_configs}", 
+                     delta=f"{percentage:.0f}%")
+        else:
+            st.metric("Configurations OK", "N/A", delta="N/A")
 
     # ============================================================
     # RISQUES DÉTECTÉS - DONNÉES RÉELLES
@@ -64,14 +98,46 @@ def show():
 
     st.subheader("🎯 Risques Identifiés")
 
-    if security_score > 0 and 'report' in locals():
-        risques = report.get('risques_identifies', [])
+    # Vérifier si un rapport a été chargé
+    if report is not None and security_score > 0:
+        # Récupérer les risques depuis la bonne structure
+        if 'audit_results' in report:
+            risques = report['audit_results'].get('risques_identifies', [])
+            recommandations = report['audit_results'].get('recommandations', [])
+        else:
+            risques = report.get('risques_identifies', [])
+            recommandations = report.get('recommandations', [])
 
         if risques:
+            st.success(f"✅ {len(risques)} risques identifiés dans le dernier audit")
+            
+            # Créer un mapping des recommandations par ID de risque
+            recommandations_map = {}
+            if recommandations and len(risques) <= len(recommandations):
+                for i, rec in enumerate(recommandations):
+                    if i < len(risques):
+                        recommandations_map[i+1] = rec
+            
             for risk in risques:
+                risk_id = risk.get('id', 0)
                 severity = risk.get('severite', 'MOYENNE')
                 description = risk.get('description', 'Risque non décrit')
-                action = risk.get('action_recommandee', 'Action à définir')
+                
+                # Obtenir l'action recommandée
+                action = ""
+                if risk_id in recommandations_map:
+                    action = recommandations_map[risk_id]
+                elif recommandations and len(recommandations) > 0:
+                    # Prendre la première recommandation comme fallback
+                    action = recommandations[0]
+                else:
+                    # Action par défaut basée sur la sévérité
+                    if severity == 'CRITIQUE':
+                        action = "Révoquer immédiatement les privilèges dangereux"
+                    elif severity == 'HAUTE':
+                        action = "Renforcer les paramètres de sécurité"
+                    else:
+                        action = "Réévaluer la configuration"
 
                 # Définir l'icône selon la sévérité
                 if severity == 'CRITIQUE':
@@ -84,13 +150,28 @@ def show():
                     icon = "🟡"
                     expanded = False
 
-                with st.expander(f"{icon} {severity}: {description}", expanded=expanded):
+                # Limiter la longueur de la description pour l'en-tête
+                short_desc = description[:80] + "..." if len(description) > 80 else description
+                
+                with st.expander(f"{icon} {severity}: {short_desc}", expanded=expanded):
+                    st.write(f"**Description complète:** {description}")
                     st.write(f"**Action recommandée:** {action}")
-                    if st.button(f"📋 Marquer comme traité", key=f"fix_{description[:20]}"):
-                        st.success(f"✅ Risque marqué comme traité: {description}")
+                    
+                    # Bouton pour marquer comme traité
+                    col_btn1, col_btn2 = st.columns(2)
+                    with col_btn1:
+                        if st.button(f"📋 Marquer comme traité", key=f"fix_{risk_id}"):
+                            st.success(f"✅ Risque #{risk_id} marqué comme traité")
+                    with col_btn2:
+                        if st.button(f"🔍 Voir détails", key=f"detail_{risk_id}"):
+                            st.info(f"**Détails du risque #{risk_id}**")
+                            st.json(risk)
         else:
             st.success("✅ Aucun risque détecté dans le dernier audit")
     else:
+        # Mode démo avec données par défaut
+        st.info("ℹ️ Mode démo - Aucun rapport récent chargé")
+        
         # Données par défaut si pas de rapport
         default_risks = [
             {"type": "CRITIQUE", "description": "Rôle DBA sur compte applicatif", "action": "Révoquer immédiatement"},
@@ -103,7 +184,7 @@ def show():
         for risk in default_risks:
             with st.expander(f"⚠️ {risk['type']}: {risk['description']}", expanded=True if risk['type'] == "CRITIQUE" else False):
                 st.write(f"**Action recommandée:** {risk['action']}")
-                if st.button(f"Appliquer correction", key=f"fix_{risk['description'][:10]}"):
+                if st.button(f"Appliquer correction", key=f"fix_demo_{risk['description'][:10]}"):
                     st.success(f"Correction appliquée pour: {risk['description']}")
 
     # ============================================================
