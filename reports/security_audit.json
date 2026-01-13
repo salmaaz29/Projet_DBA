@@ -1,7 +1,7 @@
 {
   "metadata": {
     "module": "Module 4 - Security Audit",
-    "generated_at": "2026-01-12T14:36:51.355265",
+    "generated_at": "2026-01-13T09:29:01.261103",
     "data_source": "CSV files from Module 1",
     "llm_engine": "LLMEngine"
   },
@@ -10,7 +10,7 @@
     "risques_identifies": [
       {
         "id": 1,
-        "description": "L'utilisateur APP_ADMIN possède le rôle DANGEROUS_ROLE qui inclut le privilège ALTER ANY TABLE. Cela représente un risque CRITIQUE car il permet la modification de n'importe quelle table du système, y compris celles système, ce qui pourrait engager la sécurité et l'intégrité des données.",
+        "description": "L'utilisateur APP_ADMIN possède le rôle DANGEROUS_ROLE qui inclut le privilège ALTER ANY TABLE. Cela représente un risque CRITIQUE car il permet la modification de n'importe quelle table du système, y compris celles système, ce qui pourrait compromettre l'intégrité de la base de données.",
         "severite": "CRITIQUE"
       },
       {
@@ -20,14 +20,14 @@
       },
       {
         "id": 3,
-        "description": "Les utilisateurs tels que APP_DBA_USER et PROJET_DB ont des privilèges étendus comme SELECT ANY DICTIONARY et UNLIMITED TABLESPACE. Bien que ces privilèges soient nécessaires pour certaines tâches administratives, leur attribution sans justification claire représente un risque MOYENNE car cela pourrait être exploité en cas de compromission du compte.",
+        "description": "Les utilisateurs tels que APP_DBA_USER et PROJET_DB ont des privilèges étendus comme SELECT ANY DICTIONARY et UNLIMITED TABLESPACE. Bien que ces privilèges soient nécessaires pour certaines tâches administratives, leur attribution sans justification claire représente un risque MOYENNE car cela augmente la surface d'attaque en cas de compromission du compte.",
         "severite": "MOYENNE"
       }
     ],
     "recommandations": [
       "1. Révoquer le rôle DANGEROUS_ROLE à l'utilisateur APP_ADMIN et lui accorder uniquement les privilèges spécifiques nécessaires à son rôle.",
-      "2. Supprimer ou mettre à jour le profil WEAK_PROFILE pour inclure des contraintes de sécurité appropriées, telles que des tentatives de connexion limitées et une expiration des mots de passe.",
-      "3. Réévaluer les privilèges étendus accordés aux utilisateurs comme APP_DBA_USER et PROJET_DB, et limiter ces privilèges au strict nécessaire pour leurs tâches administratives."
+      "2. Supprimer ou mettre à jour le profil WEAK_PROFILE pour imposer des contraintes de sécurité similaires au profil DEFAULT, incluissant des limites sur les tentatives de connexion et une expiration des mots de passe.",
+      "3. Réévaluer les privilèges étendus accordés aux utilisateurs comme APP_DBA_USER et PROJET_DB, et limiter ces privilèges au strict nécessaire pour minimiser les risques en cas de compromission."
     ]
   }
 }

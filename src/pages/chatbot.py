@@ -1,4 +1,4 @@
-# pages/chatbot.py - VERSION CORRIGÉE & CONFORME AU CAHIER DES CHARGES
+# pages/chatbot.py - VERSION CORRIGÉE
 
 import streamlit as st
 from datetime import datetime
@@ -145,22 +145,25 @@ def handle_query_optimization(user_input, modules, llm, rag):
 
         # Use RAG context for SQL analysis
         vector_results = rag.retrieve_context(user_input, n_results=3) if rag else []
-        explication_plan = llm.query_with_vector_context(
+        context_text = "\n".join([str(r) for r in vector_results]) if vector_results else ""
+        
+        # CORRECTION ICI : Utiliser generate() au lieu de query_with_vector_context()
+        explication_plan = llm.generate(
             f"Analysez cette requête SQL spécifique et expliquez comment Oracle l'exécuterait : {user_input}\n"
             "Décrivez étape par étape le plan d'exécution probable.",
-            vector_results
+            context=context_text
         )
 
-        points_couteux = llm.query_with_vector_context(
+        points_couteux = llm.generate(
             f"Identifiez les 3 opérations les plus coûteuses dans cette requête SQL spécifique : {user_input}\n"
             "Expliquez pourquoi chaque opération pourrait être lente et donner des métriques.",
-            vector_results
+            context=context_text
         )
 
-        suggestions = llm.query_with_vector_context(
+        suggestions = llm.generate(
             f"Donnez 3 recommandations d'optimisation spécifiques pour cette requête SQL : {user_input}\n"
             "Incluez des commandes SQL concrètes et le gain attendu pour chaque recommandation.",
-            vector_results
+            context=context_text
         )
 
         # Parse suggestions into structured recommendations
@@ -207,9 +210,12 @@ def handle_query_optimization(user_input, modules, llm, rag):
 
     # Cas 2 : question générale
     vector_results = rag.retrieve_context(user_input, n_results=3) if rag else []
-    explanation = llm.query_with_vector_context(
+    context_text = "\n".join([str(r) for r in vector_results]) if vector_results else ""
+    
+    # CORRECTION ICI
+    explanation = llm.generate(
         "Explique pourquoi une requête Oracle SELECT peut être lente",
-        vector_results
+        context=context_text
     )
 
     return f"""
@@ -339,9 +345,12 @@ def handle_recovery(user_input, modules):
 # ============================================================
 def handle_general_help(user_input, llm, rag=None):
     vector_results = rag.retrieve_context(user_input, n_results=3) if rag else []
-    answer = llm.query_with_vector_context(
+    context_text = "\n".join([str(r) for r in vector_results]) if vector_results else ""
+    
+    # CORRECTION ICI
+    answer = llm.generate(
         f"Réponds brièvement à cette question Oracle : {user_input}",
-        vector_results
+        context=context_text
     )
     return f"💡 {answer}"
 
